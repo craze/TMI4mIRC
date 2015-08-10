@@ -24,7 +24,7 @@ raw ROOMSTATE:*:{
     echo $color(info) -t $target * Channel restrictions: $iif($msgtags(r9k).key,r9k) $iif($msgtags(slow).key,slow) $iif($msgtags(subs-only).key,subscribers-only)
   }
   if ($msgtags(broadcaster-lang).key) {
-    echo $color(info) -t $target * Broadcast lanugage is: $msgtags(broadcaster-lang).key 
+    echo $color(info) -t $target * Broadcast lanugage: $msgtags(broadcaster-lang).key 
   }
   haltdef
 }
