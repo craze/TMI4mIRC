@@ -2,7 +2,7 @@
 * TMI 4 mIRC
 * Twitch Messaging Interface enhancements
 *
-* @author Geir André Halle
+* @author Geir AndrÃ© Halle
 * @version 0.0.0811
 */
 on *:CONNECT:{
@@ -29,7 +29,7 @@ raw ROOMSTATE:*:{
   haltdef
 }
 raw USERSTATE:*:{ 
-  if ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key) {
+  if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
     echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$msgtags(user-type).key) $iif($right($target,-1) == $me,broadcaster) $iif($msgtags(subscriber).key,subscriber) $iif($msgtags(turbo).key,turbo)
   }
   haltdef 
@@ -40,6 +40,7 @@ raw HOSTTARGET:*:{
   }
   haltdef
 }
+on 1:INPUT:#:{ if ($left($1-,1) != /) .timertmi4input- [ $+ [ $chan ] ] 1 2 return }
 on ^1:NOTICE:*:#:{
   if (($server == tmi.twitch.tv) && ($nick == tmi.twitch.tv)) {
     if ($2 != hosting) { echo $color(info) -t $chan * $1- }
