@@ -53,9 +53,6 @@ on ^1:TEXT:*:#:{
       if (!$istok($1-,to,32)) { echo $color(info) -t $chan * $1- }
       haltdef
     }
-    if ($msgtags(user-type).key == staff) cline -m 13 $chan $nick
-    elseif ($msgtags(user-type).key == admin) cline -m 13 $chan $nick
-    elseif ($msgtags(user-type).key == globalmod) cline -m 13 $chan $nick
 
     if ($tmiStyling) {
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
