@@ -56,5 +56,40 @@ on ^1:TEXT:*:#:{
     if ($msgtags(user-type).key == staff) cline -m 13 $chan $nick
     elseif ($msgtags(user-type).key == admin) cline -m 13 $chan $nick
     elseif ($msgtags(user-type).key == globalmod) cline -m 13 $chan $nick
+
+    if ($tmiStyling) {
+      echo -t $chan $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key))) $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo)) $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
+      haltdef
+    }
   }
 }
+
+#tmiStyling on
+alias -l tmiStyling return $true
+
+alias tmiBadge {
+  var %tmibadge
+  if ($1 == broadcaster) { var %tmibadge = 0,4🎥 }
+  elseif ($1 == staff) { var %tmibadge = 0,1🔧 }
+  elseif ($1 == admin) { var %tmibadge = 0,7⛊ }
+  elseif ($1 == globalmod) { var %tmibadge = 0,3🔨 }
+  elseif ($1 == mod) { var %tmibadge = 0,3⚔ }
+  elseif ($1 == turbo) { var %tmibadge = 0,6🔋 }
+  return %tmibadge
+}
+
+alias -l tmiDisplayname return $+(,$tmiHexcolor($msgtags(color).key),$$1,)
+alias -l tmiHexcolor {
+  tokenize 46 $regsubex($1,/#?([a-f\d]{2})/gi,$base(\1,16,10) .)
+  var %i = 0, %c, %d = 200000
+  while %i < 16 {
+    tokenize 32 $1-3 $replace($rgb($color(%i)),$chr(44),$chr(32))
+    if $calc(($1 -$4)^2 + ($2 -$5)^2 + ($3 -$6)^2) < %d {
+      %c = %i
+      %d = $v1
+    }
+    inc %i
+  }
+  return %c
+}
+#tmiStyling end
