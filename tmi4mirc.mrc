@@ -69,12 +69,12 @@ alias -l tmiStyling return $true
 
 alias tmiBadge {
   var %tmibadge
-  if ($1 == broadcaster) { var %tmibadge = 0,4🎥 }
-  elseif ($1 == staff) { var %tmibadge = 0,1🔧 }
-  elseif ($1 == admin) { var %tmibadge = 0,7⛊ }
-  elseif ($1 == globalmod) { var %tmibadge = 0,3🔨 }
-  elseif ($1 == mod) { var %tmibadge = 0,3⚔ }
-  elseif ($1 == turbo) { var %tmibadge = 0,6🔋 }
+  if ($1 == broadcaster) { var %tmibadge = $chr(3) $+ 0,4🎥 $+ $chr(3) }
+  elseif ($1 == staff) { var %tmibadge = $chr(3) $+ 0,1🔧 $+ $chr(3) }
+  elseif ($1 == admin) { var %tmibadge = $chr(3) $+ 0,7⛊ $+ $chr(3) }
+  elseif ($1 == globalmod) { var %tmibadge = $chr(3) $+ 0,3🔨 $+ $chr(3) }
+  elseif ($1 == mod) { var %tmibadge = $chr(3) $+ 0,3⚔ $+ $chr(3) }
+  elseif ($1 == turbo) { var %tmibadge = $chr(3) $+ 0,6🔋 $+ $chr(3) }
   return %tmibadge
 }
 
