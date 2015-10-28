@@ -40,11 +40,23 @@ raw HOSTTARGET:*:{
   }
   haltdef
 }
-on 1:INPUT:#:{ if ($left($1-,1) != /) .timertmi4input- [ $+ [ $chan ] ] 1 2 return }
+on 1:INPUT:#:{ if (($left($1-,3) == /me) || ($left($1-,1) != /)) .timertmi4input- [ $+ [ $chan ] ] 1 2 return }
 on ^1:NOTICE:*:#:{
   if (($server == tmi.twitch.tv) && ($nick == tmi.twitch.tv)) {
     if ($2 != hosting) { echo $color(info) -t $chan * $1- }
     haltdef
+  }
+}
+on ^1:ACTION:*:#:{
+  if ($server == tmi.twitch.tv) { 
+    if ($tmiStyling) {
+      var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
+      var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
+      var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
+      var %tmiChatter = * %tmiChatter $tmiDisplayname($msgtags(display-name).key) $1- 
+      echo $color(action) -t $chan %tmiChatter
+      haltdef
+    }    
   }
 }
 on ^1:TEXT:*:#:{
@@ -54,12 +66,16 @@ on ^1:TEXT:*:#:{
       haltdef
     }
 
-    if ($tmiStyling) {
+    elseif ($tmiStyling) {
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
-      var %tmiChatter = %tmiChatter $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
-      var %tmiChatter = %tmiChatter $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
+      var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
+      var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = %tmiChatter $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
       echo -t $chan %tmiChatter
+      if (subscribed isin %tmiChatter) {
+        echo -t @tmiDebug ( $+ $chan $+ : $+ $nick $+ : $+ chat $+ ) %tmiChatter
+        echo -t @tmiDebug ( $+ $chan $+ : $+ $nick $+ : $+ tags $+ ) $msgtags
+      }
       haltdef
     }
   }
