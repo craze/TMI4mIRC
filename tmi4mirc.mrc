@@ -30,7 +30,7 @@ raw ROOMSTATE:*:{
 }
 raw USERSTATE:*:{ 
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
-    echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$msgtags(user-type).key) $iif($right($target,-1) == $me,broadcaster) $iif($msgtags(subscriber).key,subscriber) $iif($msgtags(turbo).key,turbo)
+    echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)) $iif($right($target,-1) == $me,$tmibadge(broadcaster)) $iif($msgtags(subscriber).key,$tmibadge(subscriber)) $iif($msgtags(turbo).key,$tmibadge(turbo))
   }
   haltdef 
 }
@@ -65,17 +65,12 @@ on ^1:TEXT:*:#:{
       if (!$istok($1-,to,32)) { echo $color(info) -t $chan * $1- }
       haltdef
     }
-
     elseif ($tmiStyling) {
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = %tmiChatter $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
       echo -t $chan %tmiChatter
-      if (subscribed isin %tmiChatter) {
-        echo -t @tmiDebug ( $+ $chan $+ : $+ $nick $+ : $+ chat $+ ) %tmiChatter
-        echo -t @tmiDebug ( $+ $chan $+ : $+ $nick $+ : $+ tags $+ ) $msgtags
-      }
       haltdef
     }
   }
@@ -98,16 +93,38 @@ alias tmiBadge {
 
 alias -l tmiDisplayname return $+(,$tmiHexcolor($msgtags(color).key),$$1,)
 alias -l tmiHexcolor {
-  tokenize 46 $regsubex($1,/#?([a-f\d]{2})/gi,$base(\1,16,10) .)
   var %i = 0, %c, %d = 200000
-  while %i < 16 {
-    tokenize 32 $1-3 $replace($rgb($color(%i)),$chr(44),$chr(32))
-    if $calc(($1 -$4)^2 + ($2 -$5)^2 + ($3 -$6)^2) < %d {
-      %c = %i
-      %d = $v1
+  if ($1 == #2E8B57) { var %c = 10 }
+  elseif ($1 == #5F9EA0) { var %c = 10 }
+  elseif ($1 == #FF69B4) { var %c = 13 }
+  elseif ($1 == #00FF7F) { var %c = 09 }
+  else {
+    tokenize 46 $regsubex($1,/#?([a-f\d]{2})/gi,$base(\1,16,10) .)
+    while %i < 16 {
+      tokenize 32 $1-3 $replace($rgb($color(%i)),$chr(44),$chr(32))
+      if $calc(($1 -$4)^2 + ($2 -$5)^2 + ($3 -$6)^2) < %d {
+        %c = %i
+        %d = $v1
+      }
+      inc %i
     }
-    inc %i
   }
   return %c
 }
 #tmiStyling end
+
+menu channel {
+  $iif($server == tmi.twitch.tv,Twitch)
+  .Refresh chat:join $chan
+  .List moderators:.privmsg $chan .mods
+}
+menu nicklist {
+  $iif(($server == tmi.twitch.tv) && ($me isop $chan),Twitch)
+  .Purge $$1:.privmsg $chan .timeout $1 1
+  .Timeout $$1:.privmsg $chan .timeout $1
+  .Ban $$1:.privmsg $chan .ban $1
+  .$iif($me == $right($chan,-1),-)
+  .$iif($me == $right($chan,-1),Moderator)
+  ..$iif($$1 isop $chan,$style(2)) $+ Mod $$1:.privmsg $chan .mod $1
+  ..$iif($$1 !isop $chan,$style(2)) $+ Unmod $$1:.privmsg $chan .unmod $1
+}
