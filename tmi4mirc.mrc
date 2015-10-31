@@ -46,14 +46,16 @@ raw HOSTTARGET:*:{
   haltdef
 }
 on 1:INPUT:#:{ 
-  if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
-    if ($tmiStyling) {
-      var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$chan,.,$me),user-type),$tmiBadge($hget($+(tmi.,$chan,.,$me),user-type)))) $+ $iif($hget($+(tmi.,$chan,.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$chan,.,$me),subscriber),$tmiBadge(subscriber))
-      var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$active,.,$me),color)) $+ $hget($+(tmi.,$active,.,$me),display-name) $+ $chr(3)
-      privmsg $chan $1-
-      if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
-      else echo -t $active %tmiNametag $+ : $1-
-      haltdef
+  if ($server == tmi.twitch.tv) {
+    if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
+      if ($tmiStyling) {
+        var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$chan,.,$me),user-type),$tmiBadge($hget($+(tmi.,$chan,.,$me),user-type)))) $+ $iif($hget($+(tmi.,$chan,.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$chan,.,$me),subscriber),$tmiBadge(subscriber))
+        var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$active,.,$me),color)) $+ $hget($+(tmi.,$active,.,$me),display-name) $+ $chr(3)
+        privmsg $chan $1-
+        if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
+        else echo -t $active %tmiNametag $+ : $1-
+        haltdef
+      }
     }
   }
 }
@@ -92,6 +94,7 @@ on ^1:TEXT:*:#:{
   }
 }
 
+alias -l tmiecho { echo $color(info) -t $1- }
 #tmiStyling on
 alias -l tmiStyling return $true
 
@@ -128,11 +131,19 @@ alias -l tmiHexcolor {
   return %c
 }
 #tmiStyling end
+alias -l tmiStylingToggle {
+  if ($group(#tmiStyling).status == on) { .disable #tmiStyling | tmiecho * Disabled Twitch style }
+  else { .enable #tmiStyling | tmiecho * Enabled Twitch style }
+}
 
 menu channel {
   $iif($server == tmi.twitch.tv,Twitch)
   .Refresh chat:join $chan
   .List moderators:.privmsg $chan .mods
+  .-
+  ;.Config
+  .$iif($group(#tmiStyling).status == on,Deactivate Twitch styling):tmiStylingToggle
+  .$iif($group(#tmiStyling).status == off,Activate Twitch styling):tmiStylingToggle
 }
 menu nicklist {
   $iif(($server == tmi.twitch.tv) && ($me isop $chan),Twitch)
