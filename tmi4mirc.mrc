@@ -29,6 +29,11 @@ raw ROOMSTATE:*:{
   haltdef
 }
 raw USERSTATE:*:{ 
+  hadd -m $+(tmi.,$1,.,$me) color $msgtags(color).key
+  hadd -m $+(tmi.,$1,.,$me) display-name $msgtags(display-name).key
+  hadd -m $+(tmi.,$1,.,$me) user-type $msgtags(user-type).key
+  hadd -m $+(tmi.,$1,.,$me) turbo $msgtags(turbo).key
+  hadd -m $+(tmi.,$1,.,$me) subscriber $msgtags(subscriber).key
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
     echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)) $iif($right($target,-1) == $me,$tmibadge(broadcaster)) $iif($msgtags(subscriber).key,$tmibadge(subscriber)) $iif($msgtags(turbo).key,$tmibadge(turbo))
   }
@@ -40,7 +45,18 @@ raw HOSTTARGET:*:{
   }
   haltdef
 }
-on 1:INPUT:#:{ if (($left($1-,3) == /me) || ($left($1-,1) != /)) .timertmi4input- [ $+ [ $chan ] ] 1 2 return }
+on 1:INPUT:#:{ 
+  if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
+    if ($tmiStyling) {
+      var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$chan,.,$me),user-type),$tmiBadge($msgtags(user-type).key))) $+ $iif($hget($+(tmi.,$chan,.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$chan,.,$me),subscriber),$tmiBadge(subscriber))
+      var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$active,.,$me),color)) $+ $hget($+(tmi.,$active,.,$me),display-name) $+ $chr(3)
+      privmsg $chan $1-
+      if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
+      else echo -t $active %tmiNametag $+ : $1-
+      haltdef
+    }
+  }
+}
 on ^1:NOTICE:*:#:{
   if (($server == tmi.twitch.tv) && ($nick == tmi.twitch.tv)) {
     if ($2 != hosting) { echo $color(info) -t $chan * $1- }
