@@ -48,7 +48,7 @@ raw HOSTTARGET:*:{
 on 1:INPUT:#:{ 
   if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
     if ($tmiStyling) {
-      var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$chan,.,$me),user-type),$tmiBadge($msgtags(user-type).key))) $+ $iif($hget($+(tmi.,$chan,.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$chan,.,$me),subscriber),$tmiBadge(subscriber))
+      var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$chan,.,$me),user-type),$tmiBadge($hget($+(tmi.,$chan,.,$me),user-type)))) $+ $iif($hget($+(tmi.,$chan,.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$chan,.,$me),subscriber),$tmiBadge(subscriber))
       var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$active,.,$me),color)) $+ $hget($+(tmi.,$active,.,$me),display-name) $+ $chr(3)
       privmsg $chan $1-
       if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
