@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 0.0.0811
+* @version 0.0.1101
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
