@@ -42,6 +42,7 @@ raw USERSTATE:*:{
 raw HOSTTARGET:*:{ 
   if ($2 != -) {
     echo $color(info) -t $1 * Now hosting $+($chr(2),$2,$chr(2)) $iif($3 != -,for $+($chr(2),$3,$chr(2)) viewers,)
+    if (($1 == $+($chr(35),$me)) && ($+($chr(35),$2) == $active)) { echo $color(info) -t $+($chr(35),$2) * Now hosting $+($chr(2),$2,$chr(2)) $iif($3 != -,for $+($chr(2),$3,$chr(2)) viewers,) } 
   }
   haltdef
 }
