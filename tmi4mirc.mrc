@@ -84,6 +84,8 @@ on ^1:TEXT:*:#:{
       haltdef
     }
     elseif ($tmiStyling) {
+      if($msgtags(user-type).key) hadd -m $+(tmi.,$nick,.,$chan) user-type $msgtags(user-type).key
+      if($msgtags(turbo).key) hadd -m $+(tmi.turbo) $nick
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
@@ -137,21 +139,24 @@ alias -l tmiStylingToggle {
 }
 
 menu channel {
-  $iif($server == tmi.twitch.tv,Twitch)
+  $iif($server == tmi.twitch.tv,Twitch ( $+ $right($chan,-1) $+ ))
   .Refresh chat:join $chan
   .List moderators:.privmsg $chan .mods
+  .$iif($me != $right($chan,-1),Host as $me):privmsg $+($chr(35),$me) .host $right($chan,-1)
+  .$iif($me == $right($chan,-1),Unhost):privmsg $+($chr(35),$me) .unhost
   .-
   ;.Config
   .$iif($group(#tmiStyling).status == on,Deactivate Twitch styling):tmiStylingToggle
   .$iif($group(#tmiStyling).status == off,Activate Twitch styling):tmiStylingToggle
 }
 menu nicklist {
-  $iif(($server == tmi.twitch.tv) && ($me isop $chan),Twitch)
+  $iif(($server == tmi.twitch.tv) && ($me isop $chan),⚔ Twitch ( $+ $right($chan,-1) $+ ))
   .Purge $$1:.privmsg $chan .timeout $1 1
   .Timeout $$1:.privmsg $chan .timeout $1
   .Ban $$1:.privmsg $chan .ban $1
-  .$iif($me == $right($chan,-1),-)
-  .$iif($me == $right($chan,-1),Moderator)
+  .Unban $$1:.privmsg $chan .unban $1
+  .-
+  .$iif($me == $right($chan,-1),🎥 Moderator status)
   ..$iif($$1 isop $chan,$style(2)) $+ Mod $$1:.privmsg $chan .mod $1
   ..$iif($$1 !isop $chan,$style(2)) $+ Unmod $$1:.privmsg $chan .unmod $1
 }
