@@ -52,7 +52,7 @@ on 1:INPUT:#:{
     if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
       if ($tmiStyling) {
         var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$me,.,$chan),user-type),$tmiBadge($hget($+(tmi.,$me,.,$chan),user-type)))) $+ $iif($hget($+(tmi.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$me,.,$chan),subscriber),$tmiBadge(subscriber))
-        var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$me,.,$chan),color)) $+ $hget($+(tmi.,$chan,.,$me),display-name) $+ $chr(3)
+        var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$me),color)) $+ $hget($+(tmi.,$me),display-name) $+ $chr(3)
         privmsg $chan $1-
         if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
         else echo -t $active %tmiNametag $+ : $1-
