@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 0.0.1101
+* @version 0.0.1105
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -33,7 +33,7 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
   if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$1),$me)) hadd -m $+(tmi.user-type.,$1) $me $msgtags(user-type).key
   if ($msgtags(turbo).key != $hget($+(tmi.turbo),$me)) hadd -m $+(tmi.turbo) $me
-  if ($msgtags(subscriber).key) != $hget($+(tmi.subscriber.,$1),$me) hadd -m $+(tmi.subscriber.,$1) $me
+  if ($msgtags(subscriber).key) != $hget($+(tmi.subscriber.,$1),$me) hadd -m $+(tmi.subscriber.,$1) $me $msgtags(subscriber).key
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
     echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)) $iif($right($target,-1) == $me,$tmibadge(broadcaster)) $iif($msgtags(subscriber).key,$tmibadge(subscriber)) $iif($msgtags(turbo).key,$tmibadge(turbo))
   }
@@ -51,7 +51,7 @@ on 1:INPUT:#:{
   if ($server == tmi.twitch.tv) {
     if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
       if ($tmiStyling) {
-        var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.user-type.,$chan),$me),$tmiBadge($hget($+(tmi.user-type.,$chan),$me)))) $+ $iif($hfind(tmi.turbo,$me),$tmiBadge(turbo)) $+ $iif($hfind($+(tmi.subscriber.,$chan),$me),$tmiBadge(subscriber))
+        var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.user-type.,$chan),$me),$tmiBadge($hget($+(tmi.user-type.,$chan),$me)))) $+ $iif($hfind(tmi.turbo,$me),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.subscriber.,$chan),$me) == 1,$tmiBadge(subscriber))
         var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$me),color)) $+ $hget($+(tmi.,$me),display-name) $+ $chr(3)
         privmsg $chan $1-
         if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
@@ -70,6 +70,10 @@ on ^1:NOTICE:*:#:{
 on ^1:ACTION:*:#:{
   if ($server == tmi.twitch.tv) { 
     if ($tmiStyling) {
+      if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$chan),$nick)) { hadd -m $+(tmi.user-type.,$chan) $nick $msgtags(user-type).key }
+      if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
+      if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick $msgtags(subscriber).key }
+
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
@@ -88,7 +92,7 @@ on ^1:TEXT:*:#:{
     elseif ($tmiStyling) {
       if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$chan),$nick)) { hadd -m $+(tmi.user-type.,$chan) $nick $msgtags(user-type).key }
       if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
-      if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick }
+      if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick $msgtags(subscriber).key }
 
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
@@ -154,11 +158,13 @@ menu channel {
   .$iif($group(#tmiStyling).status == off,Activate Twitch styling):tmiStylingToggle
 }
 menu nicklist {
-  $iif(($server == tmi.twitch.tv) && ($me isop $chan),⚔ Twitch ( $+ $right($chan,-1) $+ ))
-  .Purge $$1:.privmsg $chan .timeout $1 1
-  .Timeout $$1:.privmsg $chan .timeout $1
-  .Ban $$1:.privmsg $chan .ban $1
-  .Unban $$1:.privmsg $chan .unban $1
+  $iif(($server == tmi.twitch.tv) && ($hget($+(tmi.user-type.,$chan),$me) || ($right($chan,-1) == $me)),⚔ Twitch ( $+ $right($chan,-1) $+ ))
+  .$iif(!$hget($+(tmi.user-type.,$chan),$1),✘ Purge $$1):.privmsg $chan .timeout $1 1
+  .$iif(!$hget($+(tmi.user-type.,$chan),$1),🕘 Timeout $$1):.privmsg $chan .timeout $1
+  .$iif(!$hget($+(tmi.user-type.,$chan),$1),🛇 Ban $$1):.privmsg $chan .ban $1
+  .$iif(!$hget($+(tmi.user-type.,$chan),$1),✔ Unban $$1):.privmsg $chan .unban $1
+  .-
+  .Join $1 $+ 's chatroom:join $chr(35) $+ $$1
   .-
   .$iif($me == $right($chan,-1),🎥 Moderator status)
   ..$iif($$1 isop $chan,$style(2)) $+ Mod $$1:.privmsg $chan .mod $1
