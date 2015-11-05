@@ -31,9 +31,9 @@ raw ROOMSTATE:*:{
 raw USERSTATE:*:{ 
   hadd -m $+(tmi.,$me) color $msgtags(color).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
-  hadd -m $+(tmi.,$me) turbo $msgtags(turbo).key
-  if ($msgtags(user-type).key) hadd -m $+(tmi.,$me,.,$1) user-type $msgtags(user-type).key
-  if ($msgtags(subscriber).key) hadd -m $+(tmi.,$me,.,$1) subscriber $msgtags(subscriber).key
+  if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$1),$me)) hadd -m $+(tmi.user-type.,$1) $me $msgtags(user-type).key
+  if ($msgtags(turbo).key != $hget($+(tmi.turbo),$me)) hadd -m $+(tmi.turbo) $me
+  if ($msgtags(subscriber).key) != $hget($+(tmi.subscriber.,$1),$me) hadd -m $+(tmi.subscriber.,$1) $me
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
     echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)) $iif($right($target,-1) == $me,$tmibadge(broadcaster)) $iif($msgtags(subscriber).key,$tmibadge(subscriber)) $iif($msgtags(turbo).key,$tmibadge(turbo))
   }
@@ -51,7 +51,7 @@ on 1:INPUT:#:{
   if ($server == tmi.twitch.tv) {
     if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
       if ($tmiStyling) {
-        var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.,$me,.,$chan),user-type),$tmiBadge($hget($+(tmi.,$me,.,$chan),user-type)))) $+ $iif($hget($+(tmi.,$me),turbo),$tmiBadge(turbo)) $+ $iif($hget($+(tmi.,$me,.,$chan),subscriber),$tmiBadge(subscriber))
+        var %tmiBadges = $iif($right($chan,-1) == $me,$tmiBadge(broadcaster),$iif($hget($+(tmi.user-type.,$chan),$me),$tmiBadge($hget($+(tmi.user-type.,$chan),$me)))) $+ $iif($hfind(tmi.turbo,$me),$tmiBadge(turbo)) $+ $iif($hfind($+(tmi.subscriber.,$chan),$me),$tmiBadge(subscriber))
         var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$me),color)) $+ $hget($+(tmi.,$me),display-name) $+ $chr(3)
         privmsg $chan $1-
         if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
@@ -86,8 +86,10 @@ on ^1:TEXT:*:#:{
       haltdef
     }
     elseif ($tmiStyling) {
-      if($msgtags(user-type).key) hadd -m $+(tmi.,$nick,.,$chan) user-type $msgtags(user-type).key
-      if($msgtags(turbo).key) hadd -m $+(tmi.turbo) $nick
+      if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$chan),$nick)) { hadd -m $+(tmi.user-type.,$chan) $nick $msgtags(user-type).key }
+      if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
+      if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick }
+
       var %tmiChatter = $iif($right($chan,-1) == $nick,$tmiBadge(broadcaster),$iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
