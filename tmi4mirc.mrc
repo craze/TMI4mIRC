@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 0.0.1105
+* @version 1.0.51119
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -111,7 +111,7 @@ alias -l tmiStyling return $true
 alias tmiBadge {
   var %tmibadge
   if ($1 == broadcaster) { var %tmibadge = $chr(3) $+ 0,4 🎥 $chr(3) }
-  elseif ($1 == staff) { var %tmibadge = $chr(3) $+ 0,1 🔧 $chr(3) }
+  elseif ($1 == staff) { var %tmibadge = $chr(3) $+ 0,2 🔧 $chr(3) }
   elseif ($1 == admin) { var %tmibadge = $chr(3) $+ 0,7 ⛊ $chr(3) }
   elseif ($1 == globalmod) { var %tmibadge = $chr(3) $+ 0,3 🔨 $chr(3) }
   elseif ($1 == mod) { var %tmibadge = $chr(3) $+ 0,3 ⚔ $chr(3) }
@@ -166,7 +166,7 @@ menu nicklist {
   .-
   .Join $1 $+ 's chatroom:join $chr(35) $+ $$1
   .-
-  .$iif($me == $right($chan,-1),🎥 Moderator status)
-  ..$iif($$1 isop $chan,$style(2)) $+ Mod $$1:.privmsg $chan .mod $1
-  ..$iif($$1 !isop $chan,$style(2)) $+ Unmod $$1:.privmsg $chan .unmod $1
+  .$iif($me = $right($chan,-1),🎥 Broadcaster options)
+  ..$iif($$1 !isop $chan,Mod $$1):.privmsg $chan .mod $1
+  ..$iif($$1 isop $chan,Unmod $$1):.privmsg $chan .unmod $1
 }
