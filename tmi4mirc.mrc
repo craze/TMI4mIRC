@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.51119
+* @version 1.0.60307
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -120,7 +120,7 @@ alias tmiBadge {
   return %tmibadge
 }
 
-alias -l tmiDisplayname return $+(,$tmiHexcolor($msgtags(color).key),$$1,)
+alias -l tmiDisplayname return $+($chr(3),$tmiHexcolor($msgtags(color).key),$replace($$1,\s,$chr(32)),$chr(3))
 alias -l tmiHexcolor {
   var %i = 0, %c, %d = 200000
   if ($1 == #2E8B57) { var %c = 10 }
@@ -142,8 +142,8 @@ alias -l tmiHexcolor {
 }
 #tmiStyling end
 alias -l tmiStylingToggle {
-  if ($group(#tmiStyling).status == on) { .disable #tmiStyling | tmiecho * Disabled Twitch style }
-  else { .enable #tmiStyling | tmiecho * Enabled Twitch style }
+  if ($group(#tmiStyling).status == on) { .disable #tmiStyling | tmiecho * Disabled Twitch styling }
+  else { .enable #tmiStyling | tmiecho * Enabled Twitch styling }
 }
 
 menu channel {
