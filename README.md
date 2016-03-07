@@ -1,8 +1,7 @@
 # TMI 4 mIRC
+![Illustration](tmi4mirc.png)
 Twitch fixes and enhancements for mIRC. 
-* Enables join/parts
-* Displays extra /CAP information properly
-* Adds chat badges and Twitch styling with approximated nick colors (optional)
-
-## Milestones
-* 2015-10-27 + Added Twitch styling. Disable or enable with `/disable #tmiStyling` or `/enable #tmiStyling` respectively
+* Takes care of enabling joins and parts in a channel
+* Displays additional /CAP information in an appropriate manner
+* Optional text layout using badge imitations and approximated nick colors.
+* Context menu with basic features.
