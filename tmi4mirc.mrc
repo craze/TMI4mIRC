@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.60307
+* @version 1.0.60409
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -81,6 +81,12 @@ on ^1:ACTION:*:#:{
       echo $color(action) -t $chan %tmiChatter
       haltdef
     }    
+  }
+}
+on ^1:TEXT:*is now hosting you*:?:{
+  if (($server == tmi.twitch.tv) && ($nick == jtv)) { 
+    var %tmiMychan = $chr(35) $+ $me
+    echo $color(notice) -t %tmiMychan * $1-
   }
 }
 on ^1:TEXT:*:#:{
