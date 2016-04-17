@@ -120,7 +120,7 @@ alias tmiBadge {
   elseif ($1 == staff) { var %tmibadge = $chr(3) $+ 0,2 🔧 $chr(3) }
   elseif ($1 == admin) { var %tmibadge = $chr(3) $+ 0,7 ⛊ $chr(3) }
   elseif ($1 == globalmod) { var %tmibadge = $chr(3) $+ 0,3 🔨 $chr(3) }
-  elseif ($1 == mod) { var %tmibadge = $chr(3) $+ 0,3 ⚔ $chr(3) }
+  elseif ($1 == mod) { var %tmibadge = $chr(3) $+ 0,3 🗡 $chr(3) }
   elseif ($1 == turbo) { var %tmibadge = $chr(3) $+ 0,6 🔋 $chr(3) }
   elseif ($1 == subscriber) { var %tmibadge = $chr(22) ★ $chr(22) }
   return %tmibadge
