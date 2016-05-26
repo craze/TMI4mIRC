@@ -78,7 +78,7 @@ on ^1:ACTION:*:#:{
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = * %tmiChatter $tmiDisplayname($msgtags(display-name).key) $1- 
-      echo $color(action) -t $chan %tmiChatter
+      echo $color(action) -tm $chan %tmiChatter
       haltdef
     }    
   }
@@ -104,7 +104,7 @@ on ^1:TEXT:*:#:{
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = %tmiChatter $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
-      echo -t $chan %tmiChatter
+      echo -tm $chan %tmiChatter
       haltdef
     }
   }
