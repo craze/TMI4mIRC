@@ -144,6 +144,7 @@ alias -l tmiHexcolor {
       inc %i
     }
   }
+  if (%c < 10) { %c = 0 $+ %c }
   return %c
 }
 #tmiStyling end
