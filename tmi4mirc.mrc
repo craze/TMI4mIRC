@@ -104,7 +104,7 @@ on ^1:TEXT:*:#:{
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = %tmiChatter $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
-      echo -tm $chan %tmiChatter
+      echo $iif($me isin $1-,$color(highlight)) -tm $chan %tmiChatter
       haltdef
     }
   }
@@ -132,7 +132,7 @@ alias -l tmiHexcolor {
   if ($1 == #2E8B57) { var %c = 10 }
   elseif ($1 == #5F9EA0) { var %c = 10 }
   elseif ($1 == #FF69B4) { var %c = 13 }
-  elseif ($1 == #00FF7F) { var %c = 09 }
+  elseif ($1 == #00FF7F) { var %c = 9 }
   else {
     tokenize 46 $regsubex($1,/#?([a-f\d]{2})/gi,$base(\1,16,10) .)
     while %i < 16 {
@@ -144,7 +144,7 @@ alias -l tmiHexcolor {
       inc %i
     }
   }
-  if (%c < 10) { %c = 0 $+ %c }
+  if (%c < 10) { %c = 0 $+ %c } ; Color must be double digits in case following text starts with a number
   return %c
 }
 #tmiStyling end
