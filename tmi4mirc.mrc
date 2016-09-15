@@ -104,7 +104,7 @@ on ^1:TEXT:*:#:{
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(turbo).key == 1,$tmiBadge(turbo))
       var %tmiChatter = %tmiChatter $+ $iif($msgtags(subscriber).key == 1,$tmiBadge(subscriber))
       var %tmiChatter = %tmiChatter $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
-      echo $iif($me isin $1-,$color(highlight)) -tm $chan %tmiChatter
+      echo $iif($highlight && ($me isin $1-),$color(highlight)) -tm $chan %tmiChatter
       haltdef
     }
   }
