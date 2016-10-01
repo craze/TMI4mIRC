@@ -133,6 +133,16 @@ alias tmiBadge {
   elseif ($left($1,5) == turbo) { var %tmibadge = $chr(3) $+ 0,6 $+ 🔋 $+ $chr(3) }
   elseif ($left($1,10) == subscriber) { var %tmibadge = $chr(22) $+ ★ $+ $chr(22) }
   elseif ($left($1,7) == premium) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
+  elseif ($left($1,4) == bits) {
+    var %tmiBitsNo = $gettok($1,2,47)
+    if (%tmiBitsNo >= 100000) { var %tmiBitsC = 7, %tmiBitsS = ✴ }
+    elseif (%tmiBitsNo >= 10000) { var %tmiBitsC = 3, %tmiBitsS = 🔯 }
+    elseif (%tmiBitsNo >= 5000) { var %tmiBitsC = 12, %tmiBitsS = ⬢ }
+    elseif (%tmiBitsNo >= 1000) { var %tmiBitsC = 9, %tmiBitsS = ⬟ }
+    elseif (%tmiBitsNo >= 100) { var %tmiBitsC = 13, %tmiBitsS = ♦ }
+    else { var %tmiBitsC = 15, %tmiBitsS = ▲ }
+    var %tmiBadge = $chr(3) $+ 1, $+ %tmiBitsC $+ %tmiBitsS $+ $chr(3)
+  }
   return %tmibadge
 }
 
