@@ -12,7 +12,13 @@ on *:CONNECT:{
 }
 raw CLEARCHAT:*:{
   if (!$timer(clearchat- [ $+ [ $+($1,-,$2) ] ]) ) {
-    echo $color(kick) -t $1 * $iif($2,$2 was purged,Chat was cleared) by a moderator
+    var %tmiCCmsg, %tmiCCreason
+    if (!$2) { var %tmiCCmsg = Chat was cleared by a moderator }
+    elseif ($msgtags(ban-duration).key < 10) { var %tmiCCmsg = $2 was purged by a moderator }
+    elseif ($msgtags(ban-duration).key >= 10) { var %tmiCCmsg = $2 has been timed out for $duration($msgtags(ban-duration).key) }
+    else { var %tmiCCmsg = $2 has been permanently banned }
+    var %tmiCCreason = $iif($msgtags(ban-reason).key,$+($chr(40),$replace($msgtags(ban-reason).key,\s,$chr(32)),$chr(41)),)
+    echo $color(kick) -t $1 * %tmiCCmsg %tmiCCreason
   }
   if ($2) {
     .timerclearchat- [ $+ [ $+($1,-,$2) ] ] 1 5 return
