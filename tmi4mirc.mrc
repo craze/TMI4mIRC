@@ -136,8 +136,8 @@ alias tmiBadge {
   elseif ($left($1,4) == bits) {
     var %tmiBitsNo = $gettok($1,2,47)
     if (%tmiBitsNo >= 100000) { var %tmiBitsC = 7, %tmiBitsS = ✵ }
-    elseif (%tmiBitsNo >= 10000) { var %tmiBitsC = 3, %tmiBitsS = ✶ }
-    elseif (%tmiBitsNo >= 5000) { var %tmiBitsC = 12, %tmiBitsS = ⬢ }
+    elseif (%tmiBitsNo >= 10000) { var %tmiBitsC = 4, %tmiBitsS = ✶ }
+    elseif (%tmiBitsNo >= 5000) { var %tmiBitsC = 11, %tmiBitsS = ⬢ }
     elseif (%tmiBitsNo >= 1000) { var %tmiBitsC = 9, %tmiBitsS = ⬟ }
     elseif (%tmiBitsNo >= 100) { var %tmiBitsC = 13, %tmiBitsS = ♦ }
     else { var %tmiBitsC = 15, %tmiBitsS = ▲ }
