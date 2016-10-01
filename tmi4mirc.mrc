@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.60409
+* @version 1.0.61001
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -78,7 +78,7 @@ on ^1:ACTION:*:#:{
       if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
       if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick $msgtags(subscriber).key }
 
-      var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($msgtags(display-name).key) $1- 
+      var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $1- 
 
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight),$color(action)) -tm $chan %tmiChatter
       haltdef
@@ -103,7 +103,7 @@ on ^1:TEXT:*:#:{
       if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
       if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick $msgtags(subscriber).key }
 
-      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($msgtags(display-name).key) $+ : $1- 
+      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $1- 
 
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight)) -tm $chan %tmiChatter
       haltdef
