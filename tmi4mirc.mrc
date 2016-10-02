@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.61001
+* @version 1.0.61002
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -54,6 +54,11 @@ raw HOSTTARGET:*:{
   }
   haltdef
 }
+raw USERNOTICE:*:{
+  echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $replace($msgtags(system-msg).key,\s,$chr(32)) 
+  if ($2) echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $msgtags(display-name).key $+ : $2-
+  haltdef
+}
 on 1:INPUT:#:{ 
   if ($server == tmi.twitch.tv) {
     if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
@@ -100,7 +105,7 @@ on ^1:TEXT:*is now hosting you*:?:{
 on ^1:TEXT:*:#:{
   if ($server == tmi.twitch.tv) { 
     if (($nick == twitchnotify) || ($nick == jtv)) {
-      if (!$istok($1-,to,32)) { echo $color(info) -t $chan * $1- }
+      echo $color(info) -t $chan * $1-
       haltdef
     }
     elseif ($tmiStyling) {
