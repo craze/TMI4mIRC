@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.61002
+* @version 1.0.61010
 */
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -207,4 +207,8 @@ menu nicklist {
   .$iif($me = $right($chan,-1),🎥 Broadcaster options)
   ..$iif($$1 !isop $chan,Mod $$1):.privmsg $chan .mod $1
   ..$iif($$1 isop $chan,Unmod $$1):.privmsg $chan .unmod $1
+}
+menu status {
+  $iif(($server == tmi.twitch.tv) && (https?//*.twitch.tv/* iswm $url),Twitch)
+  .Join $gettok($url,3,47) $+ 's chatroom:.join # $+ $gettok($url,3,47)
 }
