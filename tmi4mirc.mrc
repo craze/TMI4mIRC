@@ -96,7 +96,7 @@ on ^1:ACTION:*:#:{
     }    
   }
 }
-on ^1:TEXT:*is now hosting you*:?:{
+on ^1:TEXT:*is now *hosting you*:?:{
   if (($server == tmi.twitch.tv) && ($nick == jtv)) { 
     var %tmiMychan = $chr(35) $+ $me
     echo $color(notice) -t %tmiMychan * $1-
