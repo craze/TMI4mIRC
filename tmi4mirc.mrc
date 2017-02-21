@@ -14,8 +14,8 @@ raw CLEARCHAT:*:{
   if (!$timer(clearchat- [ $+ [ $+($1,-,$2) ] ]) ) {
     var %tmiCCmsg, %tmiCCreason
     if (!$2) { var %tmiCCmsg = Chat was cleared by a moderator }
-    elseif ($msgtags(ban-duration).key < 10) { var %tmiCCmsg = $2 was purged by a moderator }
-    elseif ($msgtags(ban-duration).key >= 10) { var %tmiCCmsg = $2 has been timed out for $duration($msgtags(ban-duration).key) }
+    elseif ($msgtags(ban-duration).key <= 10) { var %tmiCCmsg = $2 was purged by a moderator }
+    elseif ($msgtags(ban-duration).key > 10) { var %tmiCCmsg = $2 has been timed out for $duration($msgtags(ban-duration).key) }
     else { var %tmiCCmsg = $2 has been permanently banned }
     var %tmiCCreason = $iif($msgtags(ban-reason).key,$+($chr(40),$replace($msgtags(ban-reason).key,\s,$chr(32)),$chr(41)),)
     echo $color(kick) -t $1 * %tmiCCmsg %tmiCCreason
@@ -26,8 +26,8 @@ raw CLEARCHAT:*:{
   haltdef
 }
 raw ROOMSTATE:*:{ 
-  if ($msgtags(emote-only).key || $msgtags(r9k).key || $msgtags(slow).key || $msgtags(subs-only).key) {
-    echo $color(info) -t $target * Channel restrictions: $iif($msgtags(emote-only).key,emote-only) $iif($msgtags(r9k).key,r9k) $iif($msgtags(slow).key,slow) $iif($msgtags(subs-only).key,subscribers-only)
+  if ($msgtags(emote-only).key || $msgtags(r9k).key || $msgtags(slow).key || $msgtags(subs-only).key || $msgtags(followers-only).key) {
+    echo $color(info) -t $target * Channel restrictions: $iif($msgtags(emote-only).key,emote-only) $iif($msgtags(followers-only).key,followers-only( $+ $msgtags(followers-only).key $+ m)) $iif($msgtags(r9k).key,r9k) $iif($msgtags(slow).key,slow( $+ $msgtags(slow).key $+ s)) $iif($msgtags(subs-only).key,subscribers-only)
   }
   if ($msgtags(broadcaster-lang).key) {
     echo $color(info) -t $target * Broadcast lanugage: $msgtags(broadcaster-lang).key 
