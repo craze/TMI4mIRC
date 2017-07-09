@@ -115,7 +115,7 @@ on ^1:TEXT:*:#:{
       if ($msgtags(turbo).key != $hget($+(tmi.turbo),$nick)) hadd -m $+(tmi.turbo) $nick
       if ($msgtags(subscriber).key != $hget($+(tmi.turbo),$nick)) { hadd -m $+(tmi.subscriber.,$chan) $nick $msgtags(subscriber).key }
 
-      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $1- 
+      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($regex($msgtags(display-name).key,\W),$+($utfdecode($msgtags(display-name).key),$chr(40),$nick,$chr(41)),$iif($msgtags(display-name).key,$msgtags(display-name).key,$nick))) $+ : $1-
 
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight)) -tm $chan %tmiChatter
       haltdef
