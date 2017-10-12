@@ -48,9 +48,9 @@ raw USERSTATE:*:{
 }
 raw HOSTTARGET:*:{ 
   if ($2 != -) {
-    var %tmiHostmsg = * Now hosting $+($chr(2),$2,$chr(2)) $iif($3 != -,for $+($chr(2),$3,$chr(2)) viewers,)
-    echo $color(info) -t $1 %tmiHostmsg
-    if (($1 == $+($chr(35),$me)) && ($+($chr(35),$2) == $active)) { echo $color(info) -t $+($chr(35),$2) %tmiHostmsg } 
+    var %tmiHostmsg = hosting $+($chr(2),$2,$chr(2)) $iif($3 != -,for $+($chr(2),$3,$chr(2)) viewers,)
+    echo $color(info) -t $1 * Now %tmiHostmsg
+    if (($1 == $+($chr(35),$me)) && ($+($chr(35),$2) == $active)) { echo $color(info) -t $+($chr(35),$2) * You are now %tmiHostmsg } 
   }
   haltdef
 }
@@ -147,14 +147,26 @@ alias tmiBadge {
   elseif ($left($1,10) == subscriber) { var %tmibadge = $chr(3) $+ 0,6 $+ ★ $+ $chr(3) }
   elseif ($left($1,7) == premium) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
   elseif ($left($1,4) == bits) {
-    var %tmiBitsNo = $gettok($1,2,47)
-    if (%tmiBitsNo >= 100000) { var %tmiBitsC = 7, %tmiBitsS = ✵ }
-    elseif (%tmiBitsNo >= 10000) { var %tmiBitsC = 4, %tmiBitsS = ✶ }
-    elseif (%tmiBitsNo >= 5000) { var %tmiBitsC = 11, %tmiBitsS = ⬢ }
-    elseif (%tmiBitsNo >= 1000) { var %tmiBitsC = 9, %tmiBitsS = ⬟ }
-    elseif (%tmiBitsNo >= 100) { var %tmiBitsC = 13, %tmiBitsS = ♦ }
-    else { var %tmiBitsC = 15, %tmiBitsS = ▲ }
-    var %tmiBadge = $chr(3) $+ 1, $+ %tmiBitsC $+ %tmiBitsS $+ $chr(3)
+    var %tmiBitsC = 1, %tmiBitsBG = 2, %tmiBitsS = ✷, %tmiBitsNo = $gettok($1,2,47)
+    if (%tmiBitsNo < 100) { var %tmiBitsBG = 15, %tmiBitsS = ▲ }
+    elseif (%tmiBitsNo < 1000) { var %tmiBitsBG = 13, %tmiBitsS = ♦ }
+    elseif (%tmiBitsNo < 5000) { var %tmiBitsBG = 9, %tmiBitsS = ⬟ }
+    elseif (%tmiBitsNo < 10000) { var %tmiBitsBG = 11, %tmiBitsS = ⬢ }
+    elseif (%tmiBitsNo < 25000) { var %tmiBitsBG = 4, %tmiBitsS = 🟌 }
+    elseif (%tmiBitsNo < 50000) { var %tmiBitsBG = 13, %tmiBitsS = 🟌 }
+    elseif (%tmiBitsNo < 75000) { var %tmiBitsBG = 7, %tmiBitsS = 🟌 }
+    elseif (%tmiBitsNo < 100000) { var %tmiBitsBG = 9, %tmiBitsS = 🟌 }
+    elseif (%tmiBitsNo < 200000) { var %tmiBitsC = 1, %tmiBitsS = ✷ }
+    elseif (%tmiBitsNo < 300000) { var %tmiBitsC = 15 }
+    elseif (%tmiBitsNo < 400000) { var %tmiBitsC = 13 }
+    elseif (%tmiBitsNo < 500000) { var %tmiBitsC = 9 }
+    elseif (%tmiBitsNo < 600000) { var %tmiBitsC = 11 }
+    elseif (%tmiBitsNo < 700000) { var %tmiBitsC = 4 }
+    elseif (%tmiBitsNo < 800000) { var %tmiBitsC = 13 }
+    elseif (%tmiBitsNo < 900000) { var %tmiBitsC = 7 }
+    elseif (%tmiBitsNo < 1000000) { var %tmiBitsC = 9 }
+    else { var %tmiBitsBG = 8 }
+    var %tmiBadge = $chr(3) $+ 1, $+ %tmiBitsBG $+ %tmiBitsS $+ $chr(3)   
   }
   return %tmibadge
 }
