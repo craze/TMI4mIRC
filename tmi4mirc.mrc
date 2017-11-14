@@ -150,7 +150,7 @@ alias tmiBadge {
     var %tmiBitsC = 1, %tmiBitsBG = 2, %tmiBitsS = ✷, %tmiBitsNo = $gettok($1,2,47)
     if (%tmiBitsNo < 100) { var %tmiBitsBG = 15, %tmiBitsS = ▲ }
     elseif (%tmiBitsNo < 1000) { var %tmiBitsBG = 13, %tmiBitsS = ♦ }
-    elseif (%tmiBitsNo < 5000) { var %tmiBitsBG = 9, %tmiBitsS = ⬟ }
+    elseif (%tmiBitsNo < 5000) { var %tmiBitsBG = 10, %tmiBitsS = ⬟ }
     elseif (%tmiBitsNo < 10000) { var %tmiBitsBG = 11, %tmiBitsS = ⬢ }
     elseif (%tmiBitsNo < 25000) { var %tmiBitsBG = 4, %tmiBitsS = 🟌 }
     elseif (%tmiBitsNo < 50000) { var %tmiBitsBG = 13, %tmiBitsS = 🟌 }
@@ -159,7 +159,7 @@ alias tmiBadge {
     elseif (%tmiBitsNo < 200000) { var %tmiBitsC = 1, %tmiBitsS = ✷ }
     elseif (%tmiBitsNo < 300000) { var %tmiBitsC = 15 }
     elseif (%tmiBitsNo < 400000) { var %tmiBitsC = 13 }
-    elseif (%tmiBitsNo < 500000) { var %tmiBitsC = 9 }
+    elseif (%tmiBitsNo < 500000) { var %tmiBitsC = 10 }
     elseif (%tmiBitsNo < 600000) { var %tmiBitsC = 11 }
     elseif (%tmiBitsNo < 700000) { var %tmiBitsC = 4 }
     elseif (%tmiBitsNo < 800000) { var %tmiBitsC = 13 }
