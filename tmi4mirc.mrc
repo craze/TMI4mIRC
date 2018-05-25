@@ -156,7 +156,7 @@ alias tmiBadge {
     elseif (%tmiBitsNo < 50000) { var %tmiBitsBG = 13, %tmiBitsS = 🟌 }
     elseif (%tmiBitsNo < 75000) { var %tmiBitsBG = 7, %tmiBitsS = 🟌 }
     elseif (%tmiBitsNo < 100000) { var %tmiBitsBG = 9, %tmiBitsS = 🟌 }
-    elseif (%tmiBitsNo < 200000) { var %tmiBitsC = 1, %tmiBitsS = ✷ }
+    elseif (%tmiBitsNo < 200000) { var %tmiBitsC = 5, %tmiBitsBG = 8, %tmiBitsS = ✷ }
     elseif (%tmiBitsNo < 300000) { var %tmiBitsC = 15 }
     elseif (%tmiBitsNo < 400000) { var %tmiBitsC = 13 }
     elseif (%tmiBitsNo < 500000) { var %tmiBitsC = 10 }
