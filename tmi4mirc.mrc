@@ -224,5 +224,5 @@ menu nicklist {
 }
 menu status {
   $iif(($server == tmi.twitch.tv) && (https?//*.twitch.tv/* iswm $url),Twitch)
-  .Join $gettok($url,3,47) $+ 's chatroom:.join # $+ $gettok($url,3,47)
+  .Join $gettok($gettok($url,3,47),1,63) $+ 's chatroom:.join # $+ $gettok($gettok($url,3,47),1,63)
 }
