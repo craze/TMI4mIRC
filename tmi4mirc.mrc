@@ -145,7 +145,7 @@ alias tmiBadge {
   elseif ($left($1,5) == turbo) { var %tmibadge = $chr(3) $+ 0,6 $+ 🔋 $+ $chr(3) }
   elseif ($left($1,7) == partner) { var %tmibadge = $chr(3) $+ 0,6 $+ ✓ $+ $chr(3) }
   elseif ($left($1,7) == premium) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
-  elseif ($left($1,3) == vip) { var %tmiBadge = $chr(3) $+ 0,6 $+ 💎 $+ $chr(3) }
+  elseif ($left($1,3) == vip) { var %tmiBadge = $chr(3) $+ 0,13 $+ 💎 $+ $chr(3) }
   elseif ($left($1,10) == subscriber) { 
     var %tmiSubM = $gettok($1,2,47), %tmiSubC = 0
     if ($gettok($1,2,47) >= 12) { var %tmiSubC = 8 }
