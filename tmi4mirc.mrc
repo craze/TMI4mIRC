@@ -67,7 +67,7 @@ on 1:INPUT:#:{
         if ($msgtags(badges).key != $hget($+(tmi.badges.,$chan),$me)) { hadd -m $+(tmi.badges.,$chan) $me $msgtags(badges).key }
 
         var %tmiNametag = %tmiBadges $chr(3) $+ $tmiHexcolor($hget($+(tmi.,$me),color)) $+ $hget($+(tmi.,$me),display-name) $+ $chr(3)
-        privmsg $chan $1-
+        .privmsg $chan $1-
         if ($1 == /me) { echo $color(action) -t $active * %tmiNametag $2- }
         else echo -t $active %tmiNametag $+ : $1-
         haltdef
