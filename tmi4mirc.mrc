@@ -215,8 +215,8 @@ menu channel {
   $iif($server == tmi.twitch.tv,Twitch ( $+ $right($chan,-1) $+ ))
   .Refresh chat:join $chan
   .List moderators:.privmsg $chan .mods
-  .$iif($me != $right($chan,-1),Host as $me):privmsg $+($chr(35),$me) .host $right($chan,-1)
-  .$iif($me == $right($chan,-1),Unhost):privmsg $+($chr(35),$me) .unhost
+  .$iif($me != $right($chan,-1),Host as $me):.privmsg $+($chr(35),$me) .host $right($chan,-1)
+  .$iif($me == $right($chan,-1),Unhost):.privmsg $+($chr(35),$me) .unhost
   .-
   ;.Config
   .$iif($group(#tmiStyling).status == on,Deactivate Twitch styling):tmiStylingToggle
