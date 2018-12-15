@@ -137,29 +137,29 @@ alias -l tmiParseBadges {
 }
 alias tmiBadge {
   var %tmibadge
-  if ($left($1,11) == broadcaster) { var %tmibadge = $chr(3) $+ 0,4 $+ 📹 $+ $chr(3) }
-  elseif ($left($1,5) == staff) { var %tmibadge = $chr(3) $+ 0,2 $+ 🔧 $+ $chr(3) }
-  elseif ($left($1,5) == admin) { var %tmibadge = $chr(3) $+ 0,7 $+ ⛊ $+ $chr(3) }
-  elseif ($left($1,9) == globalmod) { var %tmibadge = $chr(3) $+ 0,3 $+ 🔨 $+ $chr(3) }
-  elseif ($left($1,3) == mod) { var %tmibadge = $chr(3) $+ 0,3 $+ 🗡 $+ $chr(3) }
-  elseif ($left($1,5) == turbo) { var %tmibadge = $chr(3) $+ 0,6 $+ 🔋 $+ $chr(3) }
-  elseif ($left($1,7) == partner) { var %tmibadge = $chr(3) $+ 0,6 $+ ✓ $+ $chr(3) }
-  elseif ($left($1,7) == premium) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
-  elseif ($left($1,3) == vip) { var %tmiBadge = $chr(3) $+ 0,13 $+ 💎 $+ $chr(3) }
-  elseif ($left($1,10) == subscriber) { 
+  if ($left($1,$pos($1,/)) == broadcaster/) { var %tmibadge = $chr(3) $+ 0,4 $+ 📹 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == staff/) { var %tmibadge = $chr(3) $+ 0,2 $+ 🔧 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == admin/) { var %tmibadge = $chr(3) $+ 0,7 $+ ⛊ $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == globalmod/) { var %tmibadge = $chr(3) $+ 0,3 $+ 🔨 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == mod/) { var %tmibadge = $chr(3) $+ 0,3 $+ 🗡 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == turbo/) { var %tmibadge = $chr(3) $+ 0,6 $+ 🔋 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == partner/) { var %tmibadge = $chr(3) $+ 0,6 $+ ✓ $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == premium/) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == vip/) { var %tmiBadge = $chr(3) $+ 0,13 $+ 💎 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == subscriber/) { 
     var %tmiSubM = $gettok($1,2,47), %tmiSubC = 0
     if ($gettok($1,2,47) >= 12) { var %tmiSubC = 8 }
     elseif ($gettok($1,2,47) >= 6) { var %tmiSubC = 15 }
     elseif ($gettok($1,2,47) >= 3) { var %tmiSubC = 7 }    
     var %tmibadge = $chr(3) $+ %tmiSubC $+ ,6 $+ ★ $+ $chr(3)
   }
-  elseif ($left($1,11) == bits-leader) {
+  elseif ($left($1,$pos($1,/)) == bits-leader/) {
     var %tmiBitPos = $gettok($1,2,47)
     if (%tmiBitPos == 1) { var %tmibadge = $chr(3) $+ 1,8 $+ ① $+ $chr(3) }
     if (%tmiBitPos == 2) { var %tmibadge = $chr(3) $+ 1,15 $+ ② $+ $chr(3) }
     if (%tmiBitPos == 3) { var %tmibadge = $chr(3) $+ 1,7 $+ ③ $+ $chr(3) }
   }
-  elseif ($left($1,4) == bits) {
+  elseif ($left($1,$pos($1,/)) == bits/) {
     var %tmiBitsC = 1, %tmiBitsBG = 2, %tmiBitsS = ✷, %tmiBitsNo = $gettok($1,2,47)
     if (%tmiBitsNo < 100) { var %tmiBitsBG = 15, %tmiBitsS = ▲ }
     elseif (%tmiBitsNo < 1000) { var %tmiBitsBG = 13, %tmiBitsS = ♦ }
