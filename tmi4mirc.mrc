@@ -181,6 +181,7 @@ alias tmiBadge {
     else { var %tmiBitsBG = 8 }
     var %tmiBadge = $chr(3) $+ 1, $+ %tmiBitsBG $+ %tmiBitsS $+ $chr(3)   
   }
+  elseif ($left($1,$pos($1,/)) == bits-charity/) { var %tmibadge = $chr(3) $+ 11 $+ ❄ $+ $chr(3) }
   return %tmibadge
 }
 
