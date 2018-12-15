@@ -141,7 +141,7 @@ alias tmiBadge {
   elseif ($left($1,$pos($1,/)) == staff/) { var %tmibadge = $chr(3) $+ 0,2 $+ 🔧 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == admin/) { var %tmibadge = $chr(3) $+ 0,7 $+ ⛊ $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == globalmod/) { var %tmibadge = $chr(3) $+ 0,3 $+ 🔨 $+ $chr(3) }
-  elseif ($left($1,$pos($1,/)) == mod/) { var %tmibadge = $chr(3) $+ 0,3 $+ 🗡 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == moderator/) { var %tmibadge = $chr(3) $+ 0,3 $+ 🗡 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == turbo/) { var %tmibadge = $chr(3) $+ 0,6 $+ 🔋 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == partner/) { var %tmibadge = $chr(3) $+ 0,6 $+ ✓ $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == premium/) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
