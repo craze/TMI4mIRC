@@ -42,7 +42,7 @@ raw USERSTATE:*:{
   if ($msgtags(turbo).key != $hget($+(tmi.turbo),$me)) hadd -m $+(tmi.turbo) $me
   if ($msgtags(subscriber).key) != $hget($+(tmi.subscriber.,$1),$me) hadd -m $+(tmi.subscriber.,$1) $me $msgtags(subscriber).key
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
-    echo $color(info) -t $target * Channel privileges: $iif($msgtags(user-type).key,$tmiBadge($msgtags(user-type).key)) $iif($right($target,-1) == $me,$tmibadge(broadcaster)) $iif($msgtags(subscriber).key,$tmibadge(subscriber)) $iif($msgtags(turbo).key,$tmibadge(turbo))
+    echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   haltdef 
 }
