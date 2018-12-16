@@ -41,7 +41,7 @@ raw USERSTATE:*:{
   if ($msgtags(user-type).key != $hget($+(tmi.user-type.,$1),$me)) hadd -m $+(tmi.user-type.,$1) $me $msgtags(user-type).key
   if ($msgtags(turbo).key != $hget($+(tmi.turbo),$me)) hadd -m $+(tmi.turbo) $me
   if ($msgtags(subscriber).key) != $hget($+(tmi.subscriber.,$1),$me) hadd -m $+(tmi.subscriber.,$1) $me $msgtags(subscriber).key
-  if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && ($msgtags(user-type).key || $msgtags(subscriber).key || $msgtags(turbo).key)) {
+  if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && (/ isin $msgtags(badges).key)) {
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   haltdef 
