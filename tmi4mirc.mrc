@@ -41,6 +41,7 @@ raw USERSTATE:*:{
   if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && (/ isin $msgtags(badges).key)) {
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
+  .timer 1 1 tmiSyncBadges $target $me $msgtags(badges).key
   haltdef 
 }
 raw HOSTTARGET:*:{ 
@@ -80,6 +81,7 @@ on ^1:NOTICE:*:#:{
 }
 on ^1:ACTION:*:#:{
   if ($server == tmi.twitch.tv) { 
+    tmiSyncBadges $chan $nick $msgtags(badges).key 
     if ($tmiStyling) {
       var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $1- 
 
@@ -97,6 +99,7 @@ on ^1:TEXT:*is now *hosting you*:?:{
 }
 on ^1:TEXT:*:#:{
   if ($server == tmi.twitch.tv) { 
+    tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
       haltdef
@@ -109,11 +112,37 @@ on ^1:TEXT:*:#:{
     }
   }
 }
+on 1:JOIN:#:{
+  if (($server == tmi.twitch.tv) && ($nick != $me) && ($nick == $right($chan,-1))) {
+    tmiSyncBadges $chan $nick @badges=broadcaster/1;
+  }
+}
 
 alias -l tmiecho { echo $color(info) -t $1- }
 #tmiStyling on
 alias -l tmiStyling return $true
 
+alias -l tmiSyncBadges {
+  var %tmichan = $1,%tminick = $2,%tmibadges = $3,%tmisync
+
+  if (%tminick ison %tmichan) {
+    var %tmimode = +
+    if (((*moderator/* iswm %tmibadges) || (*broadcaster/* iswm %tmibadges)) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if (((*admin/* iswm %tmibadges) || (*staff/* iswm %tmibadges) || (*global_mod/* iswm %tmibadges)) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if ((*subscriber/* iswm %tmibadges) && (%tminick !ishop %tmichan)) { var %tmimode = %tmimode $+ h }
+    if ((*vip/* iswm %tmibadges) && (%tminick !isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
+    if ($count(%tmimode,o,h,v) > 0) { var %tmisync = %tmimode }
+
+    var %tmimode = -
+    if ((*moderator/* !iswm %tmibadges) && (*broadcaster/* !iswm %tmibadges) && (%tminick isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if ((*subscriber/* !iswm %tmibadges) && (%tminick ishop %tmichan)) { var %tmimode = %tmimode $+ h }
+    if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
+    if ($count(%tmimode,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
+
+    if ($count(%tmisync,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $str(%tminick $chr(32), $count(%tmisync,o,h,v)) }
+  }
+  return
+}
 alias -l tmiParseBadges {
   var %tmiBadgeReturn,%tmiI = 1
   while (%tmiI <= $numtok($1-,44)) {      
