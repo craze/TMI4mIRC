@@ -10,6 +10,10 @@ on *:CONNECT:{
     .raw CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags
   }
 }
+raw CLEARMSG:*:{
+  echo $color(kick) -t $1 * $msgtags(login).key got a message deleted ( $+ $2- $+ )
+  haltdef
+}
 raw CLEARCHAT:*:{
   if (!$timer(clearchat- [ $+ [ $+($1,-,$2) ] ]) ) {
     var %tmiCCmsg, %tmiCCreason
