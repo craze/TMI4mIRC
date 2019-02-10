@@ -143,7 +143,7 @@ alias -l tmiSyncBadges {
     if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
     if ($count(%tmimode,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
 
-    if ($count(%tmisync,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != me) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,o,h,v)))  }
+    if ($count(%tmisync,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,o,h,v)))  }
   }
   return
 }
