@@ -57,8 +57,13 @@ raw HOSTTARGET:*:{
   haltdef
 }
 raw USERNOTICE:*:{
-  echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $replace($msgtags(system-msg).key,\s,$chr(32)) 
-  if ($2) echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $msgtags(display-name).key $+ : $2-
+  var %msg = $replace($msgtags(system-msg).key,\s,$chr(32),\n,$chr(32))  
+
+  if ($gettok(%msg,2,32) == subscribed) { echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($gettok(%msg,1,32)) $gettok(%msg,2-,32) }
+  elseif ($gettok(%msg,2,32) == raiders) { echo $color(info) -tm $1 * $+($chr(2),$gettok(%msg,1,32),$chr(2)) $gettok(%msg,2-3,32) $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($gettok(%msg,4,32)) $gettok(%msg,5-,32) }
+  else { echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $replace($msgtags(system-msg).key,\s,$chr(32)) }
+
+  if ($2) echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($msgtags(display-name).key)) $+ : $2-
   haltdef
 }
 on 1:INPUT:#:{ 
@@ -109,7 +114,7 @@ on ^1:TEXT:*:#:{
       haltdef
     }
     elseif ($tmiStyling) {
-      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($regex($msgtags(display-name).key,\W),$+($utfdecode($msgtags(display-name).key),$chr(40),$nick,$chr(41)),$iif($msgtags(display-name).key,$msgtags(display-name).key,$nick))) $+ : $1-
+      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $1-
 
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight)) -tm $chan %tmiChatter
       haltdef
@@ -205,7 +210,11 @@ alias tmiBadge {
   return %tmibadge
 }
 
-alias -l tmiDisplayname return $+($chr(3),$tmiHexcolor($msgtags(color).key),$replace($$1,\s,$chr(32)),$chr(3))
+alias -l tmiDisplayname {
+  if ($regex($$1,\W)) { var %out = $+($chr(3),$tmiHexcolor($msgtags(color).key),$utfdecode($$1),$iif(($nick != $$1) && (. !isin $nick),$chr(40) $+ $nick $+ $chr(41),),$chr(3)) } 
+  else { var %out = $+($chr(3),$tmiHexcolor($msgtags(color).key),$$1,$chr(3)) }
+  return %out
+}
 alias -l tmiHexcolor {
   var %i = 0, %c, %d = 200000
   if ($1 == #2E8B57) { var %c = 10 }
