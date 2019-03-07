@@ -66,7 +66,7 @@ raw USERNOTICE:*:{
   if ($2) echo $color(info) -tm $1 * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($msgtags(display-name).key)) $+ : $2-
   haltdef
 }
-on 1:INPUT:#:{ 
+on *:INPUT:#:{ 
   if ($server == tmi.twitch.tv) {
     if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
       if ($tmiStyling) {
@@ -82,13 +82,13 @@ on 1:INPUT:#:{
     }
   }
 }
-on ^1:NOTICE:*:#:{
+on ^*:NOTICE:*:#:{
   if (($server == tmi.twitch.tv) && ($nick == tmi.twitch.tv)) {
     if ($2 != hosting) { echo $color(info) -t $chan * $1- }
     haltdef
   }
 }
-on ^1:ACTION:*:#:{
+on ^*:ACTION:*:#:{
   if ($server == tmi.twitch.tv) { 
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if ($tmiStyling) {
@@ -99,14 +99,14 @@ on ^1:ACTION:*:#:{
     }    
   }
 }
-on ^1:TEXT:*is now *hosting you*:?:{
+on ^*:TEXT:*is now *hosting you*:?:{
   if (($server == tmi.twitch.tv) && ($nick == jtv)) { 
     var %tmiMychan = $chr(35) $+ $me
     echo $color(notice) -t %tmiMychan * $1-
     haltdef
   }
 }
-on ^1:TEXT:*:#:{
+on ^*:TEXT:*:#:{
   if ($server == tmi.twitch.tv) { 
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
@@ -121,7 +121,7 @@ on ^1:TEXT:*:#:{
     }
   }
 }
-on 1:JOIN:#:{
+on *:JOIN:#:{
   if (($server == tmi.twitch.tv) && ($nick != $me) && ($nick == $right($chan,-1))) {
     tmiSyncBadges $chan $nick @badges=broadcaster/1;
   }
