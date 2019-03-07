@@ -68,7 +68,7 @@ raw USERNOTICE:*:{
 }
 on *:INPUT:#:{ 
   if ($server == tmi.twitch.tv) {
-    if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 2 return 
+    if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 5 return 
       if ($tmiStyling) {
         var %tmiBadges = $tmiParseBadges($hget($+(tmi.,$me,.badges),$chan))
         if ($msgtags(badges).key != $hget($+(tmi.,$me,.badges),$chan)) { hadd -m $+(tmi.,$me,.badges) $chan $msgtags(badges).key }
