@@ -8,6 +8,7 @@
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
     .raw CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags
+    .parseline -qit :tmi.twitch.tv 005 $me PREFIX=(qaohv)~&@%+
   }
 }
 raw CLEARMSG:*:{
@@ -136,19 +137,22 @@ alias -l tmiSyncBadges {
 
   if (%tminick ison %tmichan) {
     var %tmimode = +
-    if (((*moderator/* iswm %tmibadges) || (*broadcaster/* iswm %tmibadges)) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
-    if (((*admin/* iswm %tmibadges) || (*staff/* iswm %tmibadges) || (*global_mod/* iswm %tmibadges)) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if (((*broadcaster/* iswm %tmibadges)) && (~ !isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
+    if (((*admin/* iswm %tmibadges) || (*staff/* iswm %tmibadges) || (*global_mod/* iswm %tmibadges)) && (& !isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ a }    
+    if ((*moderator/* iswm %tmibadges) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
     if ((*subscriber/* iswm %tmibadges) && (%tminick !ishop %tmichan)) { var %tmimode = %tmimode $+ h }
     if ((*vip/* iswm %tmibadges) && (%tminick !isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
-    if ($count(%tmimode,o,h,v) > 0) { var %tmisync = $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$replace(%tmimode,+,+o),%tmimode) }
+    if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$replace(%tmimode,+,+o),%tmimode) }
 
     var %tmimode = -
-    if ((*moderator/* !iswm %tmibadges) && (*broadcaster/* !iswm %tmibadges) && (%tminick isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if (((*broadcaster/* !iswm %tmibadges)) && (~ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
+    if (((*admin/* !iswm %tmibadges) && (*staff/* !iswm %tmibadges) && (*global_mod/* !iswm %tmibadges)) && (& isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ a }    
+    if ((*moderator/* !iswm %tmibadges) && (%tminick isop %tmichan)) { var %tmimode = %tmimode $+ o }
     if ((*subscriber/* !iswm %tmibadges) && (%tminick ishop %tmichan)) { var %tmimode = %tmimode $+ h }
     if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
-    if ($count(%tmimode,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
+    if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
 
-    if ($count(%tmisync,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,o,h,v)))  }
+    if ($count(%tmisync,q,a,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,q,a,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,q,a,o,h,v)))  }
   }
   return
 }
