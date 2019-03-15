@@ -145,9 +145,9 @@ alias -l tmiSyncBadges {
     if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$replace(%tmimode,+,+o),%tmimode) }
 
     var %tmimode = -
-    if (((*broadcaster/* !iswm %tmibadges)) && (~ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
+    if ((*broadcaster/* !iswm %tmibadges) && (~ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
     if (((*admin/* !iswm %tmibadges) && (*staff/* !iswm %tmibadges) && (*global_mod/* !iswm %tmibadges)) && (& isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ a }    
-    if ((*moderator/* !iswm %tmibadges) && (%tminick isop %tmichan)) { var %tmimode = %tmimode $+ o }
+    if (((*moderator/* !iswm %tmibadges) && (*broadcaster/* !iswm %tmibadges) && (*admin/* !iswm %tmibadges) && (*staff/* !iswm %tmibadges) && (*global_mod/* !iswm %tmibadges)) && (@ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ o }
     if ((*subscriber/* !iswm %tmibadges) && (%tminick ishop %tmichan)) { var %tmimode = %tmimode $+ h }
     if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
     if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
