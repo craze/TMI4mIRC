@@ -91,6 +91,7 @@ on ^*:NOTICE:*:#:{
 }
 on ^*:ACTION:*:#:{
   if ($server == tmi.twitch.tv) { 
+    if ($nick ison $chan) { tmi4api $chan }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if ($tmiStyling) {
       var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $1- 
@@ -108,7 +109,8 @@ on ^*:TEXT:*is now *hosting you*:?:{
   }
 }
 on ^*:TEXT:*:#:{
-  if ($server == tmi.twitch.tv) { 
+  if ($server == tmi.twitch.tv) {
+    if ($nick ison $chan) { tmi4api $chan }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
@@ -122,7 +124,7 @@ on ^*:TEXT:*:#:{
     }
   }
 }
-on *:JOIN:#:{ if ($server == tmi.twitch.tv) { tmi4api $chan  } }
+on *:JOIN:#:{ if (($server == tmi.twitch.tv) && ($nick != $me)) { tmi4api $chan  } }
 raw 366:*:{ if (($server == tmi.twitch.tv) && ($target == $me)) { tmi4api $2 } }
 
 alias -l tmiecho { echo $color(info) -t $1- }
@@ -354,7 +356,7 @@ on *:sockread:tmi4api:{
     var %tmi4len = $calc($pos(%tmi4api.data,",2) - %tmi4pos)
     var %tmi4usr = $mid(%tmi4api.data, %tmi4pos , %tmi4len )
 
-    if (%tmi4usr) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
+    if ((%tmi4usr) && (%tmi4api.next isin qaohv)) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
   }
 
   if ($sockbr == 0) return
