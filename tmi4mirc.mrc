@@ -355,8 +355,10 @@ on *:sockread:tmi4api:{
     var %tmi4pos = $calc($pos(%tmi4api.data,",1) + 1)
     var %tmi4len = $calc($pos(%tmi4api.data,",2) - %tmi4pos)
     var %tmi4usr = $mid(%tmi4api.data, %tmi4pos , %tmi4len )
-
-    if ((%tmi4usr) && (%tmi4api.next isin qaohv)) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
+    if (%tmi4usr ison %tmi4api.chan) {
+      if (%tmi4api.next isin qaohv) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
+      if ((%tmi4usr ison %tmi4api.chan) && (%tmi4usr !isreg %tmi4api.chan) && (%tmi4api.next == r)) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
+    }
   }
 
   if ($sockbr == 0) return
