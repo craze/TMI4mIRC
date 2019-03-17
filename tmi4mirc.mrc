@@ -8,7 +8,7 @@
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
     .raw CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags
-    .parseline -qit :tmi.twitch.tv 005 $me PREFIX=(qaohv)~&@%+
+    .parseline -qit :tmi.twitch.tv 005 $me PREFIX=(qaohv)~&@%+ NETWORK=Twitch
   }
 }
 raw CLEARMSG:*:{
