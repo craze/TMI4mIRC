@@ -151,7 +151,7 @@ alias -l tmiSyncBadges {
     if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
     if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
 
-    if ($count(%tmisync,q,a,o,h,v) > 0) { .parseline -qit :tmi MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,q,a,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,q,a,o,h,v)))  }
+    if ($count(%tmisync,q,a,o,h,v) > 0) { .parseline -qit : $+ $server MODE %tmichan %tmisync $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$right(%tmichan,-1) $str(%tminick $chr(32), $calc($count(%tmisync,q,a,o,h,v) - 1)),$str(%tminick $chr(32), $count(%tmisync,q,a,o,h,v)))  }
   }
   return
 }
@@ -288,12 +288,12 @@ alias -l tmi4chatters {
       if (& isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ a }
       if (@ isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ o }
       if (+ isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ v }
-      if (%tmi4api.regular != $null) { .parseline -qit :tmi MODE %c - $+ %tmi4api.regular $str(%n,$numtok(%tmi4api.regular,32) $+ $chr(32)) }
+      if (%tmi4api.regular != $null) { .parseline -qit : $+ $server MODE %c - $+ %tmi4api.regular $str(%n,$numtok(%tmi4api.regular,32) $+ $chr(32)) }
     }
     inc %i
   }
 
-  if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit :tmi MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
+  if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
 }
 
