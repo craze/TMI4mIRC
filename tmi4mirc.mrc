@@ -260,7 +260,7 @@ alias tmiRefresh {
   sockopen -e tmi4topic api.twitch.tv 443
 }
 alias -l tmiReplaceU {
-  return $replace($$1-,\u0026,&,\",")
+  return $replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,)
 }
 
 alias -l tmi4users {
