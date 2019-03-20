@@ -3,8 +3,10 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.0.61023
+* @version 1.1.0
 */
+alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 }
+
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
     .raw CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags
@@ -91,7 +93,7 @@ on ^*:NOTICE:*:#:{
 }
 on ^*:ACTION:*:#:{
   if ($server == tmi.twitch.tv) { 
-    if ($nick ison $chan) { tmi4api $chan }
+    if ($nick ison $chan) { tmiRefresh $chan }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if ($tmiStyling) {
       var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $1- 
@@ -110,7 +112,7 @@ on ^*:TEXT:*is now *hosting you*:?:{
 }
 on ^*:TEXT:*:#:{
   if ($server == tmi.twitch.tv) {
-    if ($nick ison $chan) { tmi4api $chan }
+    if ($nick ison $chan) { tmiRefresh $chan }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
@@ -124,8 +126,8 @@ on ^*:TEXT:*:#:{
     }
   }
 }
-on *:JOIN:#:{ if (($server == tmi.twitch.tv) && ($nick != $me)) { tmi4api $chan  } }
-raw 366:*:{ if (($server == tmi.twitch.tv) && ($target == $me)) { tmi4api $2 } }
+on *:JOIN:#:{ if (($server == tmi.twitch.tv) && ($nick != $me)) { tmiRefresh $chan  } }
+raw 366:*:{ if (($server == tmi.twitch.tv) && ($target == $me)) { tmiRefresh $2 } }
 
 alias -l tmiecho { echo $color(info) -t $1- }
 #tmiStyling on
@@ -244,57 +246,82 @@ alias -l tmiStylingToggle {
   else { .enable #tmiStyling | tmiecho * Enabled Twitch styling }
 }
 
-alias tmi4api {
-  if ($sock(tmi4api).name == tmi4api) { return }
+alias tmiRefresh {
+  ;User list
+  if ($sock(tmi4users).name == tmi4users) { return }
   if (($timer(tmiusers.# $+ [ $1 ] ])) || ($timer(tmiusers. $+ [ $1 ] ]))) { return }
-  set %tmi4api.chan $$1
-  sockopen -e tmi4api tmi.twitch.tv 443
+  set %tmi4users.chan $$1
+  sockopen -e tmi4users tmi.twitch.tv 443
+
+  ;Topic
+  if ($sock(tmi4topic).name == tmi4topic) { return }
+  if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
+  set %tmi4topic.chan $$1
+  sockopen -e tmi4topic api.twitch.tv 443
+}
+alias -l tmiReplaceU {
+  return $replace($$1-,\u0026,&)
 }
 
-alias -l tmi4chatters {
+alias -l tmi4users {
   if ($1 ischan) { var %c = $1 }
   else { return }
 
   var %i = 1
-  while (%i <= $numtok(%tmi4api. [ $+ [ %c ] $+ -q  ],32)) {
-    var %n = $gettok(%tmi4api. [ $+ [ %c ] $+ -q  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -q  ],32)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -q  ],%i,32)
     if ((%n ison %c) && (~ !isin $nick(%c,%n).pnick)) var %q = $addtok(%q,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4api. [ $+ [ %c ] $+ -a  ],32)) {
-    var %n = $gettok(%tmi4api. [ $+ [ %c ] $+ -a  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -a  ],32)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -a  ],%i,32)
     if ((%n ison %c) && (& !isin $nick(%c,%n).pnick)) var %a = $addtok(%a,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4api. [ $+ [ %c ] $+ -o  ],32)) {
-    var %n = $gettok(%tmi4api. [ $+ [ %c ] $+ -o  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -o  ],32)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -o  ],%i,32)
     if ((%n ison %c) && (%n !isop %c)) var %o = $addtok(%o,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4api. [ $+ [ %c ] $+ -v  ],32)) {
-    var %n = $gettok(%tmi4api. [ $+ [ %c ] $+ -v  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -v  ],32)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -v  ],%i,32)
     if ((%n ison %c) && (+ !isin $nick(%c,%n).pnick)) var %v = $addtok(%v,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4api. [ $+ [ %c ] $+ -r  ],32)) {
-    var %n = $gettok(%tmi4api. [ $+ [ %c ] $+ -r  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -r  ],32)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -r  ],%i,32)
     if (%n ison %c) { 
-      var %tmi4api.regular
-      if (~ isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ q }
-      if (& isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ a }
-      if (@ isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ o }
-      if (+ isin $nick(%c,%n).pnick) { var %tmi4api.regular = %tmi4api.regular $+ v }
-      if (%tmi4api.regular != $null) { .parseline -qit : $+ $server MODE %c - $+ %tmi4api.regular $str(%n,$numtok(%tmi4api.regular,32) $+ $chr(32)) }
+      var %tmi4users.regular
+      if (~ isin $nick(%c,%n).pnick) { var %tmi4users.regular = %tmi4users.regular $+ q }
+      if (& isin $nick(%c,%n).pnick) { var %tmi4users.regular = %tmi4users.regular $+ a }
+      if (@ isin $nick(%c,%n).pnick) { var %tmi4users.regular = %tmi4users.regular $+ o }
+      if (+ isin $nick(%c,%n).pnick) { var %tmi4users.regular = %tmi4users.regular $+ v }
+      if (%tmi4users.regular != $null) { .parseline -qit : $+ $server MODE %c - $+ %tmi4users.regular $str(%n,$numtok(%tmi4users.regular,32) $+ $chr(32)) }
     }
     inc %i
   }
 
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
+}
+alias -l tmi4topic {
+  if ($1 ischan) { 
+    var %c = $1
+    goto settopic 
+  } 
+  elseif ($active ischan) { 
+    var %c = $active
+    goto settopic
+  }
+  return
+  :settopic
+  var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status $+ $chr(3) $chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game $+ $chr(3) $+ $chr(41)
+  if (($chan(%c).topic != %newtopic) && ($len(%newtopic) > 10)) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
+  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 
 menu channel {
@@ -328,42 +355,69 @@ menu status {
   .Join $gettok($gettok($url,3,47),1,63) $+ 's chatroom:.join # $+ $gettok($gettok($url,3,47),1,63)
 }
 
-on *:sockopen:tmi4api:{
+on *:sockopen:tmi4users:{
   if ($sockerr > 0) return
 
-  if ($left(%tmi4api.chan,1) == $chr(35)) { var %tmi4api.uri = /group/user/ $+ $right(%tmi4api.chan,-1) $+ /chatters }
-  else { var %tmi4api.uri = /group/user/ $+ %tmi4api.chan $+ /chatters }
+  if ($left(%tmi4users.chan,1) == $chr(35)) { var %tmi4users.uri = /group/user/ $+ $right(%tmi4users.chan,-1) $+ /chatters }
+  else { var %tmi4users.uri = /group/user/ $+ %tmi4users.chan $+ /chatters }
 
-  sockwrite -tn tmi4api GET %tmi4api.uri HTTP/1.1
-  sockwrite -tn tmi4api Host: tmi.twitch.tv
-  sockwrite -tn tmi4api Connection: close
-  sockwrite -tn tmi4api $crlf
+  sockwrite -tn tmi4users GET %tmi4users.uri HTTP/1.1
+  sockwrite -tn tmi4users Host: tmi.twitch.tv
+  sockwrite -tn tmi4users Connection: close
+  sockwrite -tn tmi4users $crlf
 }
-on *:sockread:tmi4api:{
+on *:sockread:tmi4users:{
   if ($sockerr > 0) return
 
-  sockread %tmi4api.data
+  sockread %tmi4users.data
 
-  if ("broadcaster": isin %tmi4api.data) { set %tmi4api.next q }
-  if ("vips": isin %tmi4api.data) { set %tmi4api.next v }
-  if ("moderators": isin %tmi4api.data) { set %tmi4api.next o }
-  if (("staff": isin %tmi4api.data) || ("admins": isin %tmi4api.data) || ("global_mods": isin %tmi4api.data)) { set %tmi4api.next = a }
-  if ("viewers": isin %tmi4api.data) { set %tmi4api.next r }
-  if ($chr(93) isin %tmi4api.data) { unset %tmi4api.next }
+  if ("broadcaster": isin %tmi4users.data) { set %tmi4users.next q }
+  if ("vips": isin %tmi4users.data) { set %tmi4users.next v }
+  if ("moderators": isin %tmi4users.data) { set %tmi4users.next o }
+  if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next = a }
+  if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
+  if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
 
-  if ((%tmi4api.next) && ($chr(91) !isin %tmi4api.data)) { 
-    var %tmi4pos = $calc($pos(%tmi4api.data,",1) + 1)
-    var %tmi4len = $calc($pos(%tmi4api.data,",2) - %tmi4pos)
-    var %tmi4usr = $mid(%tmi4api.data, %tmi4pos , %tmi4len )
-    if (%tmi4usr ison %tmi4api.chan) {
-      if (%tmi4api.next isin qaohv) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
-      if ((%tmi4usr ison %tmi4api.chan) && (%tmi4usr !isreg %tmi4api.chan) && (%tmi4api.next == r)) { set %tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ] $addtok(%tmi4api. [ $+ [ %tmi4api.chan ] $+ - $+ [ %tmi4api.next ] ],%tmi4usr,32) }
+  if ((%tmi4users.next) && ($chr(91) !isin %tmi4users.data)) { 
+    var %tmi4pos = $calc($pos(%tmi4users.data,",1) + 1)
+    var %tmi4len = $calc($pos(%tmi4users.data,",2) - %tmi4pos)
+    var %tmi4usr = $mid(%tmi4users.data, %tmi4pos , %tmi4len )
+    if (%tmi4usr ison %tmi4users.chan) {
+      if (%tmi4users.next isin qaohv) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
+      if ((%tmi4usr ison %tmi4users.chan) && (%tmi4usr !isreg %tmi4users.chan) && (%tmi4users.next == r)) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
     }
   }
 
   if ($sockbr == 0) return
 }
-on *:sockclose:tmi4api:{ 
-  tmi4chatters %tmi4api.chan
-  unset %tmi4api.*
+on *:sockclose:tmi4users:{ 
+  tmi4chatters %tmi4users.chan
+  unset %tmi4users.*
+}
+on *:sockopen:tmi4topic:{
+  if ($sockerr > 0) return
+
+  if ($left(%tmi4topic.chan,1) == $chr(35)) { var %tmi4topic.uri = /kraken/streams/ $+ $right(%tmi4topic.chan,-1) $+ ?client_id= $+ $tmiClientID }
+  else { var %tmi4topic.uri = /kraken/streams/ $+ %tmi4topic.chan $+ ?client_id= $+ $tmiClientID }
+
+  sockwrite -tn tmi4topic GET %tmi4topic.uri HTTP/1.1
+  sockwrite -tn tmi4topic Host: api.twitch.tv
+  sockwrite -tn tmi4topic Connection: close
+  sockwrite -tn tmi4topic $crlf
+}
+on *:sockread:tmi4topic:{
+  if ($sockerr > 0) return
+  sockread &tmi4topic.data
+
+  if ("stream":null isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { return }
+  if (($bvar(&tmi4topic.data,0) > 1000) && ("stream_type" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) {
+    set %tmi4topic.status $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
+    set %tmi4topic.game $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) )
+  }
+
+  if ($sockbr == 0) return
+}
+on *:sockclose:tmi4topic:{ 
+  tmi4topic %tmi4topic.chan
+  unset %tmi4topic.*
 }
