@@ -321,6 +321,7 @@ alias -l tmi4topic {
   :settopic
   var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status $+ $chr(3) $chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game $+ $chr(3) $+ $chr(41)
   if (($chan(%c).topic != %newtopic) && ($len(%newtopic) > 10)) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
+  elseif (($chan(%c).topic) && ($chan(%c).topic != %newtopic)) { .parseline -qit : $+ $server TOPIC %c : }
   .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 
