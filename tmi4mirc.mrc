@@ -375,7 +375,7 @@ on *:sockread:tmi4users:{
   if ("broadcaster": isin %tmi4users.data) { set %tmi4users.next q }
   if ("vips": isin %tmi4users.data) { set %tmi4users.next v }
   if ("moderators": isin %tmi4users.data) { set %tmi4users.next o }
-  if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next = a }
+  if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next a }
   if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
   if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
 
