@@ -410,7 +410,7 @@ on *:sockread:tmi4topic:{
   sockread &tmi4topic.data
 
   if ("stream":null isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { return }
-  if (($bvar(&tmi4topic.data,0) > 1000) && ("stream_type" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) {
+  if ("status" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
     set %tmi4topic.status $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
     set %tmi4topic.game $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) )
   }
