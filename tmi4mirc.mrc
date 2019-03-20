@@ -391,7 +391,7 @@ on *:sockread:tmi4users:{
   if ($sockbr == 0) return
 }
 on *:sockclose:tmi4users:{ 
-  tmi4chatters %tmi4users.chan
+  tmi4users %tmi4users.chan
   unset %tmi4users.*
 }
 on *:sockopen:tmi4topic:{
