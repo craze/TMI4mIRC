@@ -398,8 +398,8 @@ on *:sockclose:tmi4users:{
 on *:sockopen:tmi4topic:{
   if ($sockerr > 0) return
 
-  if ($left(%tmi4topic.chan,1) == $chr(35)) { var %tmi4topic.uri = /kraken/streams/ $+ $right(%tmi4topic.chan,-1) $+ ?client_id= $+ $tmiClientID }
-  else { var %tmi4topic.uri = /kraken/streams/ $+ %tmi4topic.chan $+ ?client_id= $+ $tmiClientID }
+  if ($left(%tmi4topic.chan,1) == $chr(35)) { var %tmi4topic.uri = /kraken/channels/ $+ $right(%tmi4topic.chan,-1) $+ ?client_id= $+ $tmiClientID }
+  else { var %tmi4topic.uri = /kraken/channels/ $+ %tmi4topic.chan $+ ?client_id= $+ $tmiClientID }
 
   sockwrite -tn tmi4topic GET %tmi4topic.uri HTTP/1.1
   sockwrite -tn tmi4topic Host: api.twitch.tv
