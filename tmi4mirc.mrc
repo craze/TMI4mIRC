@@ -260,7 +260,7 @@ alias tmiRefresh {
   sockopen -e tmi4topic api.twitch.tv 443
 }
 alias -l tmiReplaceU {
-  return $replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,)
+  return $strip($replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,))
 }
 
 alias -l tmi4users {
@@ -319,9 +319,10 @@ alias -l tmi4topic {
   }
   return
   :settopic
-  var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status $+ $chr(3) $chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game $+ $chr(3) $+ $chr(41)
-  if (($chan(%c).topic != %newtopic) && ($len(%newtopic) > 10)) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
-  elseif (($chan(%c).topic) && ($chan(%c).topic != %newtopic)) { .parseline -qit : $+ $server TOPIC %c : }
+  if (%tmi4topic.status) {
+    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status $+ $chr(3) $iif(%tmi4topic.game,$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game $+ $chr(3) $+ $chr(41),)
+    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
+  }
   .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 
@@ -410,10 +411,11 @@ on *:sockread:tmi4topic:{
   if ($sockerr > 0) return
   sockread &tmi4topic.data
 
-  if ("stream":null isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { return }
-  if ("status" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
+  if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
     set %tmi4topic.status $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
-    set %tmi4topic.game $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) )
+    if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
+      set %tmi4topic.game $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
+    }
   }
 
   if ($sockbr == 0) return
