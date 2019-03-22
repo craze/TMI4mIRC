@@ -319,8 +319,8 @@ alias -l tmi4topic {
   }
   return
   :settopic
-  if (%tmi4topic.status) {
-    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status $+ $chr(3) $iif(%tmi4topic.game,$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game $+ $chr(3) $+ $chr(41),)
+  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
+    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
     if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
   }
   .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
@@ -412,9 +412,9 @@ on *:sockread:tmi4topic:{
   sockread &tmi4topic.data
 
   if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
-    set %tmi4topic.status $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
+    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
     if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
-      set %tmi4topic.game $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
+      set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
   }
 
