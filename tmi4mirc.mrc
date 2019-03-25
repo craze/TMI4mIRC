@@ -5,7 +5,10 @@
 * @author Geir André Halle
 * @version 1.1.0
 */
-alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 }
+
+; Some configuration options
+alias -l tmiTrackFollowers { return $true }                    // Maintaining MODE +l can be $true or $false
+alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may replaced with your own
 
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
@@ -323,6 +326,10 @@ alias -l tmi4topic {
     var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
     if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
   }
+  ;Additional info as channel modes
+  var %cmode $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
+  if (($tmiTrackFollowers) && (%tmi4topic.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
+  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
   .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 
@@ -416,6 +423,9 @@ on *:sockread:tmi4topic:{
     if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
       set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
+    ; Gathering extra data for populating channel modes
+    set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
+    set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
   }
 
   if ($sockbr == 0) return
