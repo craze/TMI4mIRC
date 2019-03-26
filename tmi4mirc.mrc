@@ -8,7 +8,7 @@
 
 ; Some configuration options
 alias -l tmiTrackFollowers { return $true }                    // Maintaining MODE +l can be $true or $false
-alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may replaced with your own
+alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may be replaced with your own
 
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
