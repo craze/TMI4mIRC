@@ -16,6 +16,7 @@ on *:CONNECT:{
     .parseline -qit :tmi.twitch.tv 005 $me PREFIX=(qaohv)~&@%+ NETWORK=Twitch
   }
 }
+on *:DISCONNECT:{ if ($server == tmi.twitch.tv) { unset %tmi4badges-* } }
 raw CLEARMSG:*:{
   echo $color(kick) -t $1 * $msgtags(login).key got a message deleted ( $+ $2- $+ )
   haltdef
@@ -48,7 +49,8 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me) color $msgtags(color).key
   hadd -m $+(tmi.,$me,.badges) $1 $msgtags(badges).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
-  if ((!$timer(tmi4input- [ $+ [ $target ] ]) ) && (/ isin $msgtags(badges).key)) {
+  if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(display-name).key) && (/ isin $msgtags(badges).key)) {
+    set %tmi4badges- [ $+ [ $target ] ] $msgtags(badges).key
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   .timer 1 1 tmiSyncBadges $target $me $msgtags(badges).key
@@ -74,7 +76,7 @@ raw USERNOTICE:*:{
 }
 on *:INPUT:#:{ 
   if ($server == tmi.twitch.tv) {
-    if (($left($1-,3) == /me) || ($left($1-,1) != /)) { .timertmi4input- [ $+ [ $chan ] ] 1 5 return 
+    if (($left($1-,3) == /me) || ($left($1-,1) != /)) { 
       if ($tmiStyling) {
         var %tmiBadges = $tmiParseBadges($hget($+(tmi.,$me,.badges),$chan))
         if ($msgtags(badges).key != $hget($+(tmi.,$me,.badges),$chan)) { hadd -m $+(tmi.,$me,.badges) $chan $msgtags(badges).key }
