@@ -268,6 +268,39 @@ alias -l tmiReplaceU {
   return $strip($replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,))
 }
 
+menu channel {
+  $iif($server == tmi.twitch.tv,Twitch ( $+ $right($chan,-1) $+ ))
+  .Refresh chat:join $chan
+  .$iif($me != $right($chan,-1),Host as $me):.privmsg $+($chr(35),$me) .host $right($chan,-1)
+  .$iif($me == $right($chan,-1),Unhost):.privmsg $+($chr(35),$me) .unhost
+  .-
+  .List moderators:.privmsg $chan .mods
+  .List VIPs:.privmsg $chan .vips
+  .-
+  ;.Config
+  .$iif($group(#tmiStyling).status == on,Deactivate Twitch styling):tmiStylingToggle
+  .$iif($group(#tmiStyling).status == off,Activate Twitch styling):tmiStylingToggle
+}
+menu nicklist {
+  $iif(($server == tmi.twitch.tv) && (*moderator* iswm $hget($+(tmi.,$me,.badges),$chan) || ($right($chan,-1) == $me)),⚔ Twitch ( $+ $right($chan,-1) $+ ))
+  .$iif($1 !isop $chan,✘ Purge $$1):.privmsg $chan .timeout $1 1
+  .$iif($1 !isop $chan,🕘 Timeout $$1):.privmsg $chan .timeout $1
+  .$iif($1 !isop $chan,🛇 Ban $$1):.privmsg $chan .ban $1
+  .$iif($1 !isop $chan,✔ Unban $$1):.privmsg $chan .unban $1
+  .-
+  .Join $1 $+ 's chatroom:join $chr(35) $+ $$1
+  .-
+  .$iif($me = $right($chan,-1),🎥 Broadcaster options)
+  ..$iif($$1 !isop $chan,Mod $$1):.privmsg $chan .mod $1
+  ..$iif($$1 isop $chan,Unmod $$1):.privmsg $chan .unmod $1
+}
+menu status {
+  $iif(($server == tmi.twitch.tv) && (https?//*.twitch.tv/* iswm $url),Twitch)
+  .Join $gettok($gettok($url,3,47),1,63) $+ 's chatroom:.join # $+ $gettok($gettok($url,3,47),1,63)
+}
+
+
+;;; Number of followers as channel limit (+l)
 alias -l tmi4users {
   if ($1 ischan) { var %c = $1 }
   else { return }
@@ -313,59 +346,6 @@ alias -l tmi4users {
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
 }
-alias -l tmi4topic {
-  if ($1 ischan) { 
-    var %c = $1
-    goto settopic 
-  } 
-  elseif ($active ischan) { 
-    var %c = $active
-    goto settopic
-  }
-  return
-  :settopic
-  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
-    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
-    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
-  }
-  ;Additional info as channel modes
-  var %cmode $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
-  if (($tmiTrackFollowers) && (%tmi4topic.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
-  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
-  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
-}
-
-menu channel {
-  $iif($server == tmi.twitch.tv,Twitch ( $+ $right($chan,-1) $+ ))
-  .Refresh chat:join $chan
-  .$iif($me != $right($chan,-1),Host as $me):.privmsg $+($chr(35),$me) .host $right($chan,-1)
-  .$iif($me == $right($chan,-1),Unhost):.privmsg $+($chr(35),$me) .unhost
-  .-
-  .List moderators:.privmsg $chan .mods
-  .List VIPs:.privmsg $chan .vips
-  .-
-  ;.Config
-  .$iif($group(#tmiStyling).status == on,Deactivate Twitch styling):tmiStylingToggle
-  .$iif($group(#tmiStyling).status == off,Activate Twitch styling):tmiStylingToggle
-}
-menu nicklist {
-  $iif(($server == tmi.twitch.tv) && (*moderator* iswm $hget($+(tmi.,$me,.badges),$chan) || ($right($chan,-1) == $me)),⚔ Twitch ( $+ $right($chan,-1) $+ ))
-  .$iif($1 !isop $chan,✘ Purge $$1):.privmsg $chan .timeout $1 1
-  .$iif($1 !isop $chan,🕘 Timeout $$1):.privmsg $chan .timeout $1
-  .$iif($1 !isop $chan,🛇 Ban $$1):.privmsg $chan .ban $1
-  .$iif($1 !isop $chan,✔ Unban $$1):.privmsg $chan .unban $1
-  .-
-  .Join $1 $+ 's chatroom:join $chr(35) $+ $$1
-  .-
-  .$iif($me = $right($chan,-1),🎥 Broadcaster options)
-  ..$iif($$1 !isop $chan,Mod $$1):.privmsg $chan .mod $1
-  ..$iif($$1 isop $chan,Unmod $$1):.privmsg $chan .unmod $1
-}
-menu status {
-  $iif(($server == tmi.twitch.tv) && (https?//*.twitch.tv/* iswm $url),Twitch)
-  .Join $gettok($gettok($url,3,47),1,63) $+ 's chatroom:.join # $+ $gettok($gettok($url,3,47),1,63)
-}
-
 on *:sockopen:tmi4users:{
   if ($sockerr > 0) return
 
@@ -400,6 +380,30 @@ on *:sockread:tmi4users:{
   }
 
   if ($sockbr == 0) return
+}
+
+
+;;; Title and game as topic
+alias -l tmi4topic {
+  if ($1 ischan) { 
+    var %c = $1
+    goto settopic 
+  } 
+  elseif ($active ischan) { 
+    var %c = $active
+    goto settopic
+  }
+  return
+  :settopic
+  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
+    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
+    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
+  }
+  ;Additional info as channel modes
+  var %cmode $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
+  if (($tmiTrackFollowers) && (%tmi4topic.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
+  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
+  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 on *:sockclose:tmi4users:{ 
   tmi4users %tmi4users.chan
@@ -436,3 +440,6 @@ on *:sockclose:tmi4topic:{
   tmi4topic %tmi4topic.chan
   unset %tmi4topic.*
 }
+
+
+;;; Stream status (live/rerun/offline) as channel key (+k)
