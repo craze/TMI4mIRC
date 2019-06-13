@@ -252,6 +252,12 @@ alias -l tmiStylingToggle {
 }
 
 alias tmiRefresh {
+  ;Live status
+  if ($sock(tmi4livestatus).name == tmi4livestatus) { return }
+  if (($timer(tmi4livestatus.# $+ [ $1 ] ])) || ($timer(tmi4livestatus. $+ [ $1 ] ]))) { return }
+  set %tmi4livestatus.chan $$1
+  sockopen -e tmi4livestatus api.twitch.tv 443
+
   ;User list
   if ($sock(tmi4users).name == tmi4users) { return }
   if (($timer(tmiusers.# $+ [ $1 ] ])) || ($timer(tmiusers. $+ [ $1 ] ]))) { return }
@@ -443,3 +449,52 @@ on *:sockclose:tmi4topic:{
 
 
 ;;; Stream status (live/rerun/offline) as channel key (+k)
+alias -l tmi4livestatus {
+  if ($1 ischan) { 
+    var %c = $1
+    goto setstatus
+  } 
+  elseif ($active ischan) { 
+    var %c = $active
+    goto setstatus
+  }
+  return
+
+  :setstatus
+  if (%tmi4livestatus. [ $+ [ %c ] ] ) {
+    var %newstatus = %tmi4livestatus. [ $+ [ %c ] ] 
+    if ($chan(%c).key != %newstatus) { .parseline -qit : $+ $server MODE %c :+k %newstatus }
+  }
+  ;Additional info as channel modes
+  ;var %cmode $iif(%tmi4livestatus.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4livestatus.modes. [ $+ [ %c ] ])
+  ;if (($tmiTrackFollowers) && (%tmi4livestatus.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4livestatus.followers. [ $+ [ %c ] ] }
+  ;if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
+  .timer [ $+ tmistatus. $+ [ %c ] ] 1 120 return
+}
+on *:sockopen:tmi4livestatus:{
+  if ($sockerr > 0) return
+
+  if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /kraken/streams/ $+ $right(%tmi4livestatus.chan,-1) $+ ?client_id= $+ $tmiClientID }
+  else { var %tmi4livestatus.uri = /kraken/streams/ $+ %tmi4livestatus.chan $+ ?client_id= $+ $tmiClientID }
+
+  sockwrite -tn tmi4livestatus GET %tmi4livestatus.uri HTTP/1.1
+  sockwrite -tn tmi4livestatus Host: api.twitch.tv
+  sockwrite -tn tmi4livestatus Connection: close
+  sockwrite -tn tmi4livestatus $crlf
+}
+on *:sockread:tmi4livestatus:{
+  if ($sockerr > 0) return
+  sockread &tmi4livestatus.data
+
+  if ("stream_type": isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) {
+    set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"stream_type":,1,44) ,16,-1) )
+    return
+  }
+  elseif ("stream":null isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) { set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] OFFLINE }
+
+  if ($sockbr == 0) return
+}
+on *:sockclose:tmi4livestatus:{ 
+  tmi4livestatus %tmi4livestatus.chan
+  ;unset %tmi4livestatus.*
+}
