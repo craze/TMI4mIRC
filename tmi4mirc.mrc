@@ -117,7 +117,10 @@ on ^*:TEXT:*is now *hosting you*:?:{
 }
 on ^*:TEXT:*:#:{
   if ($server == tmi.twitch.tv) {
-    if ($nick ison $chan) { tmiRefresh $chan }
+    if ($nick ison $chan) { tmiRefresh $chan 
+      if ($nick($chan,$nick($chan,$nick)) === $msgtags(display-name).key) { noop } 
+      elseif ($nick($chan,$nick($chan,$nick)) == $msgtags(display-name).key) { .parseline -qit : $+ $nick NICK $msgtags(display-name).key }
+    }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
