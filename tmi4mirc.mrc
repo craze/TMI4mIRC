@@ -184,7 +184,19 @@ alias tmiBadge {
   elseif ($left($1,$pos($1,/)) == partner/) { var %tmibadge = $chr(3) $+ 0,6 $+ ✓ $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == premium/) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == vip/) { var %tmiBadge = $chr(3) $+ 0,13 $+ 💎 $+ $chr(3) }
-  elseif ($left($1,$pos($1,/)) == sub-gifter/) { var %tmiBadge = $chr(3) $+ 0,6 $+ 🎁 $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == sub-gifter/) { 
+    var %tmiGiftNo = $gettok($1,2,47), %tmiSubC = 0
+    if (%tmiGiftNo >= 1000) { var %tmiGiftC = 11,6 }
+    elseif (%tmiGiftNo >= 500) { var %tmiGiftC = 8 }
+    elseif (%tmiGiftNo >= 250) { var %tmiGiftC = 9 }
+    elseif (%tmiGiftNo >= 100) { var %tmiGiftC = 7 }
+    elseif (%tmiGiftNo >= 50) { var %tmiGiftC = 13 }
+    elseif (%tmiGiftNo >= 25) { var %tmiGiftC = 4 }
+    elseif (%tmiGiftNo >= 10) { var %tmiGiftC = 12 }
+    elseif (%tmiGiftNo >= 5) { var %tmiGiftC = 10 }
+    elseif (%tmiGiftNo >= 1) { var %tmiGiftC = 6 }    
+    var %tmiBadge = $chr(3) $+ %tmiGiftC $+ 🎁 $+ $chr(3) 
+  }
   elseif ($left($1,$pos($1,/)) == subscriber/) { 
     var %tmiSubM = $gettok($1,2,47), %tmiSubC = 0
     if ($gettok($1,2,47) >= 12) { var %tmiSubC = 8 }
