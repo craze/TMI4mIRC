@@ -37,6 +37,7 @@ raw CLEARCHAT:*:{
   haltdef
 }
 raw ROOMSTATE:*:{ 
+  hadd -m $+(tmi.,$target) _id $msgtags(room-id).key
   if ($msgtags(emote-only).key || $msgtags(r9k).key || $msgtags(slow).key || $msgtags(subs-only).key || $msgtags(followers-only).key >= 0) {
     echo $color(info) -t $target * Channel restrictions: $iif($msgtags(emote-only).key,emote-only) $iif($msgtags(followers-only).key >= 0,followers-only( $+ $msgtags(followers-only).key $+ m)) $iif($msgtags(r9k).key,r9k) $iif($msgtags(slow).key,slow( $+ $msgtags(slow).key $+ s)) $iif($msgtags(subs-only).key,subscribers-only)
   }
@@ -282,10 +283,35 @@ alias tmiRefresh {
   sockopen -e tmi4users tmi.twitch.tv 443
 
   ;Topic
-  if ($sock(tmi4topic).name == tmi4topic) { return }
   if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
   set %tmi4topic.chan $$1
-  sockopen -e tmi4topic api.twitch.tv 443
+  set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
+  var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
+  bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
+  set %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4topicdecode,&tmi4urlhead)
+
+}
+alias -l tmi4topicdecode {
+  var %id = $1
+  ;echo -st $urlget(%id).reply
+
+  ;var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
+  ;echo 10 -st --> %tmi4json
+
+
+  if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
+    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
+    if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
+      set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
+    }
+    ; Gathering extra data for populating channel modes
+    set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
+    set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
+  }
+
+  tmi4topic %tmi4topic.chan
+  ;unset %tmi4topic.*
+
 }
 alias -l tmiReplaceU {
   return $strip($replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,))
@@ -432,38 +458,6 @@ on *:sockclose:tmi4users:{
   tmi4users %tmi4users.chan
   unset %tmi4users.*
 }
-on *:sockopen:tmi4topic:{
-  if ($sockerr > 0) return
-
-  if ($left(%tmi4topic.chan,1) == $chr(35)) { var %tmi4topic.uri = /kraken/channels/ $+ $right(%tmi4topic.chan,-1) $+ ?client_id= $+ $tmiClientID }
-  else { var %tmi4topic.uri = /kraken/channels/ $+ %tmi4topic.chan $+ ?client_id= $+ $tmiClientID }
-
-  sockwrite -tn tmi4topic GET %tmi4topic.uri HTTP/1.1
-  sockwrite -tn tmi4topic Host: api.twitch.tv
-  sockwrite -tn tmi4topic Connection: close
-  sockwrite -tn tmi4topic $crlf
-}
-on *:sockread:tmi4topic:{
-  if ($sockerr > 0) return
-  sockread &tmi4topic.data
-
-  if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
-    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
-    if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
-      set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
-    }
-    ; Gathering extra data for populating channel modes
-    set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
-    set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
-  }
-
-  if ($sockbr == 0) return
-}
-on *:sockclose:tmi4topic:{ 
-  tmi4topic %tmi4topic.chan
-  unset %tmi4topic.*
-}
-
 
 ;;; Stream status (live/rerun/offline) as channel key (+k)
 alias -l tmi4livestatus {
