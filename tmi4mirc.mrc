@@ -284,7 +284,7 @@ alias tmiRefresh {
 
   ;Topic
   if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
-  set %tmi4topic.chan $$1
+  set %tmi4topic.chan $1
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
@@ -292,25 +292,26 @@ alias tmiRefresh {
 
 }
 alias -l tmi4topicdecode {
+  if (($timer(tmi4topic.# $+ [ %tmi4topic.chan ] ])) || ($timer(tmi4topic. $+ [ %tmi4topic.chan ] ]))) { return }
   var %id = $1
-  ;echo -st $urlget(%id).reply
-
-  ;var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
-  ;echo 10 -st --> %tmi4json
-
+  var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
 
   if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
-    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"status",1,44) ,11,-1) )
+    var %tmi4jsonS = $calc( $pos(%tmi4json,"status":,1) + 10)
+    var %tmi4jsonE = $calc( $pos( $mid(%tmi4json,$pos(%tmi4json,"status":,1)) ," $+ $chr(44) $+ ",1) - 11 )
+
+    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid(%tmi4json,%tmi4jsonS,%tmi4jsonE) )
     if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
       set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
+
     ; Gathering extra data for populating channel modes
     set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
     set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
   }
 
   tmi4topic %tmi4topic.chan
-  ;unset %tmi4topic.*
+  unset %tmi4topic.*
 
 }
 alias -l tmiReplaceU {
