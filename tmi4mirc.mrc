@@ -128,7 +128,7 @@ on ^*:TEXT:*:#:{
       haltdef
     }
     elseif ($tmiStyling) {
-      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $1-
+      var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $iif($msgtags(msg-id).key == highlighted-message,$chr(22) $1- $chr(22),$1-) 
 
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight)) -tm $chan %tmiChatter
       haltdef
