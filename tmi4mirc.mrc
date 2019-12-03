@@ -486,10 +486,13 @@ alias -l tmi4livestatus {
 on *:sockopen:tmi4livestatus:{
   if ($sockerr > 0) return
 
-  if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /kraken/streams/ $+ $right(%tmi4livestatus.chan,-1) $+ ?client_id= $+ $tmiClientID }
-  else { var %tmi4livestatus.uri = /kraken/streams/ $+ %tmi4livestatus.chan $+ ?client_id= $+ $tmiClientID }
+  ;if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /kraken/streams/ $+ $right(%tmi4livestatus.chan,-1) $+ ?client_id= $+ $tmiClientID }
+  ;else { var %tmi4livestatus.uri = /kraken/streams/ $+ %tmi4livestatus.chan $+ ?client_id= $+ $tmiClientID }
+  if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /helix/streams?user_login= $+ $right(%tmi4livestatus.chan,-1) }
+  else { var %tmi4livestatus.uri = /helix/streams?user_login= $+ %tmi4livestatus.chan }
 
   sockwrite -tn tmi4livestatus GET %tmi4livestatus.uri HTTP/1.1
+  sockwrite -tn tmi4livestatus Client-ID: $tmiClientID
   sockwrite -tn tmi4livestatus Host: api.twitch.tv
   sockwrite -tn tmi4livestatus Connection: close
   sockwrite -tn tmi4livestatus $crlf
@@ -498,11 +501,11 @@ on *:sockread:tmi4livestatus:{
   if ($sockerr > 0) return
   sockread &tmi4livestatus.data
 
-  if ("stream_type": isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) {
-    set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"stream_type":,1,44) ,16,-1) )
+  if ("type": isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) {
+    set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"type":,1,44) ,9,-1) )
     return
   }
-  elseif ("stream":null isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) { set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] OFFLINE }
+  elseif ("data":[] isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) { set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] OFFLINE }
 
   if ($sockbr == 0) return
 }
