@@ -476,7 +476,8 @@ alias -l tmi4livestatus {
   :setstatus
   if (%tmi4livestatus. [ $+ [ %c ] ] ) {
     var %newstatus = %tmi4livestatus. [ $+ [ %c ] ] 
-    if ($chan(%c).key != %newstatus) { .parseline -qit : $+ $server MODE %c :+k %newstatus }
+    if (($len($chan(%c).key) == 0) && ($chan(%c).key != %newstatus)) { .parseline -qit : $+ $server MODE %c :+k %newstatus }
+    elseif ($chan(%c).key != %newstatus) { .parseline -qit : $+ $server MODE %c :-k+k $chan(%c).key %newstatus }
   }
   ;Additional info as channel modes
   ;var %cmode $iif(%tmi4livestatus.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4livestatus.modes. [ $+ [ %c ] ])
