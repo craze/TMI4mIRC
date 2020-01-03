@@ -447,7 +447,7 @@ alias -l tmi4topic {
   return
   :settopic
   if (%tmi4topic.status. [ $+ [ %c ] ] ) {
-    var %newtopic = $chr(3) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
+    var %newtopic = $chr(3) $+ $iif($len($color(info)) == 1,0,) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $iif($len($color(other)) == 1,0,) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
     if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
   }
   ;Additional info as channel modes
