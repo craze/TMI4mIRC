@@ -186,6 +186,7 @@ alias tmiBadge {
   elseif ($left($1,$pos($1,/)) == premium/) { var %tmiBadge = $chr(3) $+ 0,12 $+ 👑 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == vip/) { var %tmiBadge = $chr(3) $+ 0,13 $+ 💎 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == glhf-pledge/) { var %tmiBadge = $chr(3) $+ 10 $+ ⌨️ $+ $chr(3) }
+  elseif ($left($1,$pos($1,/)) == founder/) { var %tmiBadge = $chr(3) $+ 0,6 $+ 🥇 $+ $chr(3) }
   elseif ($left($1,$pos($1,/)) == sub-gifter/) { 
     var %tmiGiftNo = $gettok($1,2,47), %tmiSubC = 0
     if (%tmiGiftNo >= 1000) { var %tmiGiftC = 11,6 }
