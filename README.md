@@ -4,7 +4,7 @@
 
 ### v1.2
 
-* Downloads and display channel logo in the corner
+* Downloads and displays channel logo in the corner
 
 ### v1.1
 
