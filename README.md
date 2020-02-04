@@ -2,6 +2,10 @@
 ## Twitch fixes and enhancements for mIRC. 
 ![Illustration](tmi4mirc.png)
 
+### v1.2
+
+* Downloads and display channel logo in the corner
+
 ### v1.1
 
 * Uses nick prefixes ~&@%+ to group user types.

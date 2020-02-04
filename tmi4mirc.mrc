@@ -3,11 +3,12 @@
 * Twitch Messaging Interface enhancements
 *
 * @author Geir André Halle
-* @version 1.1.0
+* @version 1.2.0
 */
 
 ; Some configuration options
 alias -l tmiTrackFollowers { return $true }                    // Maintaining MODE +l can be $true or $false
+alias -l tmiDownloadLogo { return $true }                      // Show channel logo in corner
 alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may be replaced with your own
 
 on *:CONNECT:{
@@ -283,16 +284,16 @@ alias tmiRefresh {
   set %tmi4users.chan $$1
   sockopen -e tmi4users tmi.twitch.tv 443
 
-  ;Topic
+  ;Topic / Logo
   if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
   set %tmi4topic.chan $1
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4topicdecode,&tmi4urlhead)
+  set %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead)
 
 }
-alias -l tmi4topicdecode {
+alias -l tmi4helixdecode {
   if (($timer(tmi4topic.# $+ [ %tmi4topic.chan ] ])) || ($timer(tmi4topic. $+ [ %tmi4topic.chan ] ]))) { return }
   var %id = $1
   var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
@@ -305,7 +306,10 @@ alias -l tmi4topicdecode {
     if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
       set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
-
+    if (($tmiDownloadLogo) && ("logo":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) { 
+      set %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
+      tmiPicDownload %tmi4topic.chan %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ]
+    }
     ; Gathering extra data for populating channel modes
     set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
     set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
@@ -314,6 +318,18 @@ alias -l tmi4topicdecode {
   tmi4topic %tmi4topic.chan
   unset %tmi4topic.*
 
+}
+alias -l tmiPicDownload { 
+  var -l %chan = $1
+  var -l %url = $2
+  var -l %tmiPicFile = $+($scriptdirtmi4mirc\,%chan,.jpg)
+  if ($calc( $ctime - $file(%tmiPicFile).mtime ) < 3600) return
+
+  bset -t &tmiPic.Head 1 Accept: image/jpeg $crlf Connection: close
+  set -e %tmiPic.ID $urlget(%url,gfr,%tmiPicFile,tmiPicUpdate,&tmiPic.Head)
+}
+alias -l tmiPicUpdate {
+  background -p $left($gettok($urlget($1).target,-1,92),-4) $urlget($1).target
 }
 alias -l tmiReplaceU {
   return $strip($replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,))
