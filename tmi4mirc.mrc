@@ -52,7 +52,7 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me,.badges) $1 $msgtags(badges).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
   if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(badges).key) && (/ isin $msgtags(badges).key)) {
-    set %tmi4badges- [ $+ [ $target ] ] $msgtags(badges).key
+    set -e %tmi4badges- [ $+ [ $target ] ] $msgtags(badges).key
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   .timer 1 1 tmiSyncBadges $target $me $msgtags(badges).key
@@ -275,7 +275,7 @@ alias tmiRefresh {
   ;Live status
   if ($sock(tmi4livestatus).name == tmi4livestatus) { return }
   if (($timer(tmi4livestatus.# $+ [ $1 ] ])) || ($timer(tmi4livestatus. $+ [ $1 ] ]))) { return }
-  set %tmi4livestatus.chan $$1
+  set -u0 %tmi4livestatus.chan $$1
   sockopen -e tmi4livestatus api.twitch.tv 443
 
   ;User list
@@ -290,7 +290,7 @@ alias tmiRefresh {
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead)
+  set -u0 %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead)
 
 }
 alias -l tmi4helixdecode {
@@ -307,7 +307,7 @@ alias -l tmi4helixdecode {
       set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
     if (($tmiDownloadLogo) && ("logo":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) { 
-      set %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
+      set -u0 %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
       tmiPicDownload %tmi4topic.chan %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ]
     }
     ; Gathering extra data for populating channel modes
@@ -326,10 +326,12 @@ alias -l tmiPicDownload {
   if ($calc( $ctime - $file(%tmiPicFile).mtime ) < 3600) return
 
   bset -t &tmiPic.Head 1 Accept: image/jpeg $crlf Connection: close
-  set -e %tmiPic.ID $urlget(%url,gfr,%tmiPicFile,tmiPicUpdate,&tmiPic.Head)
+  set -u0 %tmi4helix.ID. [ $+ [ %chan ] ] $urlget(%url,gfr,%tmiPicFile,tmiPicUpdate,&tmiPic.Head)
 }
 alias -l tmiPicUpdate {
-  background -p $left($gettok($urlget($1).target,-1,92),-4) $urlget($1).target
+  var -l %chan = $left($gettok($urlget($1).target,-1,92),-4)
+  background -p %chan $urlget($1).target
+  unset %tmi4helix.*. [ $+ [ %chan ] ]
 }
 alias -l tmiReplaceU {
   return $strip($replace($$1-,\u0026,&,\u003c,<,\u003e,>,\",",\\,\,\n,))
@@ -520,7 +522,7 @@ on *:sockread:tmi4livestatus:{
   sockread &tmi4livestatus.data
 
   if ("type": isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) {
-    set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"type":,1,44) ,9,-1) )
+    set -e %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"type":,1,44) ,9,-1) )
     return
   }
   elseif ("data":[] isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) { set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] OFFLINE }
