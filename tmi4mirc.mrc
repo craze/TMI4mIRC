@@ -51,7 +51,7 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me) color $msgtags(color).key
   hadd -m $+(tmi.,$me,.badges) $1 $msgtags(badges).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
-  if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(badges).key) && (/ isin $msgtags(badges).key)) {
+  if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(badges).key) && (/ isin $msgtags(badges).key) && ($tmiStyling)) {
     set -e %tmi4badges- [ $+ [ $target ] ] $msgtags(badges).key
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
@@ -121,7 +121,7 @@ on ^*:TEXT:*:#:{
   if ($server == tmi.twitch.tv) {
     if ($nick ison $chan) { tmiRefresh $chan 
       if ($nick($chan,$nick($chan,$nick)) === $msgtags(display-name).key) { noop } 
-      elseif ($nick($chan,$nick($chan,$nick)) == $msgtags(display-name).key) { .parseline -qit : $+ $nick NICK $msgtags(display-name).key }
+      elseif (($tmiStyling) && ($nick($chan,$nick($chan,$nick)) == $msgtags(display-name).key)) { .parseline -qit : $+ $nick NICK $msgtags(display-name).key }
     }
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
@@ -140,8 +140,6 @@ on *:JOIN:#:{ if (($server == tmi.twitch.tv) && ($nick != $me)) { tmiRefresh $ch
 raw 366:*:{ if (($server == tmi.twitch.tv) && ($target == $me)) { tmiRefresh $2 } }
 
 alias -l tmiecho { echo $color(info) -t $1- }
-#tmiStyling on
-alias -l tmiStyling return $true
 
 alias -l tmiSyncBadges {
   var %tmichan = $1,%tminick = $2,%tmibadges = $3,%tmisync
@@ -151,7 +149,7 @@ alias -l tmiSyncBadges {
     if (((*broadcaster/* iswm %tmibadges)) && (~ !isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
     if (((*admin/* iswm %tmibadges) || (*staff/* iswm %tmibadges) || (*global_mod/* iswm %tmibadges)) && (& !isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ a }    
     if ((*moderator/* iswm %tmibadges) && (%tminick !isop %tmichan)) { var %tmimode = %tmimode $+ o }
-    if ((*subscriber/* iswm %tmibadges) && (%tminick !ishop %tmichan)) { var %tmimode = %tmimode $+ h }
+    if (((*subscriber/* iswm %tmibadges) || (*founder/* iswm %tmibadges)) && (%tminick !ishop %tmichan)) { var %tmimode = %tmimode $+ h }
     if ((*vip/* iswm %tmibadges) && (%tminick !isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
     if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = $iif(($right(%tmichan,-1) ison %tmichan) && (%tminick != $me) && (%tminick != $right(%tmichan,-1)) && ($right(%tmichan,-1) !isop %tmichan),$replace(%tmimode,+,+o),%tmimode) }
 
@@ -159,7 +157,7 @@ alias -l tmiSyncBadges {
     if ((*broadcaster/* !iswm %tmibadges) && (~ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ q }
     if (((*admin/* !iswm %tmibadges) && (*staff/* !iswm %tmibadges) && (*global_mod/* !iswm %tmibadges)) && (& isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ a }    
     if (((*moderator/* !iswm %tmibadges) && (*broadcaster/* !iswm %tmibadges) && (*admin/* !iswm %tmibadges) && (*staff/* !iswm %tmibadges) && (*global_mod/* !iswm %tmibadges)) && (@ isin $nick(%tmichan,%tminick).pnick)) { var %tmimode = %tmimode $+ o }
-    if ((*subscriber/* !iswm %tmibadges) && (%tminick ishop %tmichan)) { var %tmimode = %tmimode $+ h }
+    if (((*subscriber/* !iswm %tmibadges) && (*founder/* !iswm %tmibadges)) && (%tminick ishop %tmichan)) { var %tmimode = %tmimode $+ h }
     if ((*vip/* !iswm %tmibadges) && (%tminick isvoice %tmichan)) { var %tmimode = %tmimode $+ v }
     if ($count(%tmimode,q,a,o,h,v) > 0) { var %tmisync = %tmisync $+ %tmimode }
 
@@ -167,6 +165,10 @@ alias -l tmiSyncBadges {
   }
   return
 }
+
+#tmiStyling on
+alias -l tmiStyling return $true
+
 alias -l tmiParseBadges {
   var %tmiBadgeReturn,%tmiI = 1
   while (%tmiI <= $numtok($1-,44)) {      
