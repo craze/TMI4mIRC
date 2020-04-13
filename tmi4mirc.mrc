@@ -2,8 +2,9 @@
 * TMI 4 mIRC
 * Twitch Messaging Interface enhancements
 *
-* @author Geir André Halle
+* @author  Geir André Halle
 * @version 1.2.0
+* @url     https://github.com/craze/TMI4mIRC
 */
 
 ; Some configuration options
