@@ -12,6 +12,15 @@ alias -l tmiTrackFollowers { return $true }                    // Maintaining MO
 alias -l tmiDownloadLogo { return $true }                      // Show channel logo in corner
 alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may be replaced with your own
 
+#tmiwhisper on
+alias whisper {
+  if (tmi.twitch.tv == $server) {
+    raw -q privmsg $+($chr(35),$me) :.w $1-
+    echo $color(notice) -t $active -> $+(-,$chr(3),$cnick($1).color,$1,$chr(3),-) $2-
+  }
+}
+#tmiwhisper end
+
 on *:CONNECT:{
   if ($server == tmi.twitch.tv) { 
     .raw CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags
