@@ -28,6 +28,7 @@ on *:CONNECT:{
   }
 }
 on *:DISCONNECT:{ if ($server == tmi.twitch.tv) { unset %tmi4badges-* } }
+on *:EXIT:{ unset %tmi4badges-* }
 raw CLEARMSG:*:{
   echo $color(kick) -t $1 * $msgtags(login).key got a message deleted ( $+ $2- $+ )
   haltdef
@@ -177,9 +178,9 @@ alias -l tmiSyncBadges {
 }
 
 #tmiStyling on
-alias -l tmiStyling return $true
+alias tmiStyling return $true
 
-alias -l tmiParseBadges {
+alias tmiParseBadges {
   var %tmiBadgeReturn,%tmiI = 1
   while (%tmiI <= $numtok($1-,44)) {      
     %tmiBadgeReturn = %tmiBadgeReturn $+ $tmiBadge( $gettok($1-,%tmiI,44) )
@@ -252,7 +253,7 @@ alias tmiBadge {
   return %tmibadge
 }
 
-alias -l tmiDisplayname {
+alias tmiDisplayname {
   if ($regex($$1,\W)) { var %out = $+($chr(3),$tmiHexcolor($msgtags(color).key),$utfdecode($$1),$iif(($nick != $$1) && (. !isin $nick),$chr(40) $+ $nick $+ $chr(41),),$chr(3)) } 
   else { var %out = $+($chr(3),$tmiHexcolor($msgtags(color).key),$$1,$chr(3)) }
   return %out
