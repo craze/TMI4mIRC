@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author  Geir André Halle
-* @version 1.2.0
+* @version 1.2.1
 * @url     https://github.com/craze/TMI4mIRC
 */
 
@@ -292,10 +292,9 @@ alias tmiRefresh {
   sockopen -e tmi4livestatus api.twitch.tv 443
 
   ;User list
-  if ($sock(tmi4users).name == tmi4users) { return }
   if (($timer(tmiusers.# $+ [ $1 ] ])) || ($timer(tmiusers. $+ [ $1 ] ]))) { return }
   set %tmi4users.chan $$1
-  sockopen -e tmi4users tmi.twitch.tv 443
+  tmi4users $$1
 
   ;Topic / Logo
   if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
@@ -382,38 +381,72 @@ menu status {
 }
 
 
-;;; Number of followers as channel limit (+l)
+;;; Fake modes for privileged users
 alias -l tmi4users {
-  if ($1 ischan) { var %c = $1 }
-  else { return }
+  var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ $replace(%tmi4users.chan,$chr(35),) $+ /chatters
+  bset -t &tmi4chathead 1 Accept: application/json $crlf Connection: close
+  set -u0 %tmi4chattersid- [ $+ [ $$1 ] $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead)
+}
+alias -l tmi4usersdecode {
+  var %c = %tmi4users.chan
+  var %id = $1
+  ;var %tmi4json = $bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text
+
+  var %i = 0
+  while (%i < $gettok( $bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text ,0,93) ) {
+    var %tmi4users.data = $gettok($bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text,%i,93)
+
+    if ("broadcaster": isin %tmi4users.data) { 
+      set %tmi4users.next q
+    }
+    if ("vips": isin %tmi4users.data) { set %tmi4users.next v }
+    if ("moderators": isin %tmi4users.data) { set %tmi4users.next o }
+    if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next a }
+    if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
+    if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
+
+    if (%tmi4users.next) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),) }
+
+    ;var %chatters = $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),)
+    ;var %u = $gettok(%chatters,0,44)
+    ;while (%u > 0) {
+    ;  var %tmi4usr = $gettok(%chatters,%u,44)
+    ;  if (%tmi4usr ison %tmi4users.chan) {
+    ;    if (%tmi4users.next isin qaohv) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
+    ;    if ((%tmi4usr ison %tmi4users.chan) && (%tmi4usr !isreg %tmi4users.chan) && (%tmi4users.next == r)) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
+    ;  }
+    ;  dec %u
+    ;}
+    inc %i
+  }
 
   var %i = 1
-  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -q  ],32)) {
-    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -q  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -q  ],44)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -q  ],%i,44)
     if ((%n ison %c) && (~ !isin $nick(%c,%n).pnick)) var %q = $addtok(%q,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -a  ],32)) {
-    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -a  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -a  ],44)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -a  ],%i,44)
     if ((%n ison %c) && (& !isin $nick(%c,%n).pnick)) var %a = $addtok(%a,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -o  ],32)) {
-    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -o  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -o  ],44)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -o  ],%i,44)
     if ((%n ison %c) && (%n !isop %c)) var %o = $addtok(%o,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -v  ],32)) {
-    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -v  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -v  ],44)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -v  ],%i,44)
     if ((%n ison %c) && (+ !isin $nick(%c,%n).pnick)) var %v = $addtok(%v,%n,32)
     inc %i
   }
   var %i = 1
-  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -r  ],32)) {
-    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -r  ],%i,32)
+  while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -r  ],44)) {
+    var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -r  ],%i,44)
     if (%n ison %c) { 
       var %tmi4users.regular
       if (~ isin $nick(%c,%n).pnick) { var %tmi4users.regular = %tmi4users.regular $+ q }
@@ -427,43 +460,8 @@ alias -l tmi4users {
 
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
+
 }
-on *:sockopen:tmi4users:{
-  if ($sockerr > 0) return
-
-  if ($left(%tmi4users.chan,1) == $chr(35)) { var %tmi4users.uri = /group/user/ $+ $right(%tmi4users.chan,-1) $+ /chatters }
-  else { var %tmi4users.uri = /group/user/ $+ %tmi4users.chan $+ /chatters }
-
-  sockwrite -tn tmi4users GET %tmi4users.uri HTTP/1.1
-  sockwrite -tn tmi4users Host: tmi.twitch.tv
-  sockwrite -tn tmi4users Connection: close
-  sockwrite -tn tmi4users $crlf
-}
-on *:sockread:tmi4users:{
-  if ($sockerr > 0) return
-
-  sockread %tmi4users.data
-
-  if ("broadcaster": isin %tmi4users.data) { set %tmi4users.next q }
-  if ("vips": isin %tmi4users.data) { set %tmi4users.next v }
-  if ("moderators": isin %tmi4users.data) { set %tmi4users.next o }
-  if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next a }
-  if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
-  if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
-
-  if ((%tmi4users.next) && ($chr(91) !isin %tmi4users.data)) { 
-    var %tmi4pos = $calc($pos(%tmi4users.data,",1) + 1)
-    var %tmi4len = $calc($pos(%tmi4users.data,",2) - %tmi4pos)
-    var %tmi4usr = $mid(%tmi4users.data, %tmi4pos , %tmi4len )
-    if (%tmi4usr ison %tmi4users.chan) {
-      if (%tmi4users.next isin qaohv) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
-      if ((%tmi4usr ison %tmi4users.chan) && (%tmi4usr !isreg %tmi4users.chan) && (%tmi4users.next == r)) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
-    }
-  }
-
-  if ($sockbr == 0) return
-}
-
 
 ;;; Title and game as topic
 alias -l tmi4topic {
