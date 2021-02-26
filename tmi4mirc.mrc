@@ -423,25 +423,25 @@ alias -l tmi4usersdecode {
   var %i = 1
   while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -q  ],44)) {
     var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -q  ],%i,44)
-    if ((%n ison %c) && (~ !isin $nick(%c,%n).pnick)) var %q = $addtok(%q,%n,32)
+    if ((%n ison %c) && (%n != $me) && (~ !isin $nick(%c,%n).pnick)) var %q = $addtok(%q,%n,32)
     inc %i
   }
   var %i = 1
   while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -a  ],44)) {
     var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -a  ],%i,44)
-    if ((%n ison %c) && (& !isin $nick(%c,%n).pnick)) var %a = $addtok(%a,%n,32)
+    if ((%n ison %c) && (%n != $me) && (& !isin $nick(%c,%n).pnick)) var %a = $addtok(%a,%n,32)
     inc %i
   }
   var %i = 1
   while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -o  ],44)) {
     var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -o  ],%i,44)
-    if ((%n ison %c) && (%n !isop %c)) var %o = $addtok(%o,%n,32)
+    if ((%n ison %c) && (%n != $me) && (%n !isop %c)) var %o = $addtok(%o,%n,32)
     inc %i
   }
   var %i = 1
   while (%i <= $numtok(%tmi4users. [ $+ [ %c ] $+ -v  ],44)) {
     var %n = $gettok(%tmi4users. [ $+ [ %c ] $+ -v  ],%i,44)
-    if ((%n ison %c) && (+ !isin $nick(%c,%n).pnick)) var %v = $addtok(%v,%n,32)
+    if ((%n ison %c) && (%n != $me) && (+ !isin $nick(%c,%n).pnick)) var %v = $addtok(%v,%n,32)
     inc %i
   }
   var %i = 1
