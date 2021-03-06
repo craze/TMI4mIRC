@@ -287,17 +287,15 @@ alias -l tmiStylingToggle {
 alias tmiRefresh {
   ;Live status
   if ($sock(tmi4livestatus).name == tmi4livestatus) { return }
-  if (($timer(tmi4livestatus.# $+ [ $1 ] ])) || ($timer(tmi4livestatus. $+ [ $1 ] ]))) { return }
+  if (($timer(tmi4livestatus.# [ $+ [ $1 ] ])) || ($timer(tmi4livestatus. [ $+ [ $1 ] ]))) { return }
   set -u0 %tmi4livestatus.chan $$1
   sockopen -e tmi4livestatus api.twitch.tv 443
 
   ;User list
-  if (($timer(tmiusers.# $+ [ $1 ] ])) || ($timer(tmiusers. $+ [ $1 ] ]))) { return }
-  set %tmi4users.chan $$1
   tmi4users $$1
 
   ;Topic / Logo
-  if (($timer(tmi4topic.# $+ [ $1 ] ])) || ($timer(tmi4topic. $+ [ $1 ] ]))) { return }
+  if (($timer(tmi4topic.# [ $+ [ $1 ] ])) || ($timer(tmi4topic. [ $+ [ $1 ] ]))) { return }
   set %tmi4topic.chan $1
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
@@ -306,7 +304,7 @@ alias tmiRefresh {
 
 }
 alias -l tmi4helixdecode {
-  if (($timer(tmi4topic.# $+ [ %tmi4topic.chan ] ])) || ($timer(tmi4topic. $+ [ %tmi4topic.chan ] ]))) { return }
+  if (($timer(tmi4topic.# [ $+ [ %tmi4topic.chan ] ])) || ($timer(tmi4topic. [ $+ [ %tmi4topic.chan ] ]))) { return }
   var %id = $1
   var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
 
@@ -327,7 +325,7 @@ alias -l tmi4helixdecode {
     set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
   }
 
-  tmi4topic %tmi4topic.chan
+  tmi4settopic %tmi4topic.chan
   unset %tmi4topic.*
 
 }
@@ -383,14 +381,15 @@ menu status {
 
 ;;; Fake modes for privileged users
 alias -l tmi4users {
-  var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ $replace(%tmi4users.chan,$chr(35),) $+ /chatters
+  if (($timer(tmiusers.# [ $+ [ $1 ] ])) || ($timer(tmiusers. [ $+ [ $1 ] ]))) { return }
+  var %c = $replace($$1,$chr(35),)
+  var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ %c $+ /chatters
   bset -t &tmi4chathead 1 Accept: application/json $crlf Connection: close
-  set -u0 %tmi4chattersid- [ $+ [ $$1 ] $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead)
+  set -u20 %tmi4chattersid- $+ [ $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead) ] %c
 }
 alias -l tmi4usersdecode {
-  var %c = %tmi4users.chan
   var %id = $1
-  ;var %tmi4json = $bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text
+  var %c = $chr(35) $+ %tmi4chattersid- [ $+ [ $1 ] ]
 
   var %i = 0
   while (%i < $gettok( $bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text ,0,93) ) {
@@ -405,18 +404,8 @@ alias -l tmi4usersdecode {
     if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
     if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
 
-    if (%tmi4users.next) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),) }
+    if (%tmi4users.next) { set %tmi4users. [ $+ [ %c ] $+ - $+ [ %tmi4users.next ] ] $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),) }
 
-    ;var %chatters = $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),)
-    ;var %u = $gettok(%chatters,0,44)
-    ;while (%u > 0) {
-    ;  var %tmi4usr = $gettok(%chatters,%u,44)
-    ;  if (%tmi4usr ison %tmi4users.chan) {
-    ;    if (%tmi4users.next isin qaohv) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
-    ;    if ((%tmi4usr ison %tmi4users.chan) && (%tmi4usr !isreg %tmi4users.chan) && (%tmi4users.next == r)) { set %tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ] $addtok(%tmi4users. [ $+ [ %tmi4users.chan ] $+ - $+ [ %tmi4users.next ] ],%tmi4usr,32) }
-    ;  }
-    ;  dec %u
-    ;}
     inc %i
   }
 
@@ -460,11 +449,11 @@ alias -l tmi4usersdecode {
 
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
-  unset %tmi4users.*
+  unset %tmi4users. [ $+ [ %c ] $+ ] -*
 }
 
 ;;; Title and game as topic
-alias -l tmi4topic {
+alias -l tmi4settopic {
   if ($1 ischan) { 
     var %c = $1
     goto settopic 
@@ -484,10 +473,6 @@ alias -l tmi4topic {
   if (($tmiTrackFollowers) && (%tmi4topic.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
   if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
   .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
-}
-on *:sockclose:tmi4users:{ 
-  tmi4users %tmi4users.chan
-  unset %tmi4users.*
 }
 
 ;;; Stream status (live/rerun/offline) as channel key (+k)
