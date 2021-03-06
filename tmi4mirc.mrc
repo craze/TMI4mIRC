@@ -289,7 +289,7 @@ alias tmiRefresh {
   if ($sock(tmi4livestatus).name == tmi4livestatus) { return }
   if (($timer(tmi4livestatus.# [ $+ [ $1 ] ])) || ($timer(tmi4livestatus. [ $+ [ $1 ] ]))) { return }
   set -u0 %tmi4livestatus.chan $$1
-  sockopen -e tmi4livestatus api.twitch.tv 443
+  ;sockopen -e tmi4livestatus api.twitch.tv 443
 
   ;User list
   tmi4users $$1
