@@ -339,7 +339,7 @@ alias -l tmi4helixdecode {
   if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
   .timer [ $+ tmi4topic. $+ [ %c ] ] 1 120 return
 
-  .unset %tmi4topic.*. [ $+ [ %tmi4topic.chan ] ]
+  .unset %tmi4topic.*. [ $+ [ %c ] ]
   .unset %tmi4topic.logolink. [ $+ [ %id ] ]
 }
 
@@ -395,7 +395,7 @@ menu status {
 
 ;;; Fake modes for privileged users
 alias -l tmi4users {
-  if (($timer(tmiusers.# [ $+ [ $1 ] ])) || ($timer(tmiusers. [ $+ [ $1 ] ]))) { return }
+  if (($timer(tmi4users.# [ $+ [ $1 ] ])) || ($timer(tmi4users. [ $+ [ $1 ] ]))) { return }
   var %c = $replace($$1,$chr(35),)
   var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ %c $+ /chatters
   bset -t &tmi4chathead 1 Accept: application/json $crlf Connection: close
@@ -462,7 +462,7 @@ alias -l tmi4usersdecode {
   }
 
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
-  if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
+  if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmi4users. $+ [ %c ] ] 1 90 return }
   unset %tmi4users. [ $+ [ %c ] $+ ] -*
 }
 
