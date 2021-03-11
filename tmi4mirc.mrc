@@ -134,7 +134,7 @@ on ^*:TEXT:*:#:{
       if ($nick($chan,$nick($chan,$nick)) === $msgtags(display-name).key) { noop } 
       elseif (($tmiStyling) && ($nick($chan,$nick($chan,$nick)) == $msgtags(display-name).key)) { .parseline -qit : $+ $nick NICK $msgtags(display-name).key }
     }
-    tmiSyncBadges $chan $nick $msgtags(badges).key 
+    tmiSyncBadges $chan $iif($msgtags(display-name).key,$msgtags(display-name).key,$nick) $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
       haltdef
