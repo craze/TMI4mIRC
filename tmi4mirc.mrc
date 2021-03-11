@@ -300,35 +300,49 @@ alias tmiRefresh {
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set -u0 %tmi4urlid $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead)
+  set .u14%tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] %tmi4topic.chan
 
 }
 alias -l tmi4helixdecode {
-  if (($timer(tmi4topic.# [ $+ [ %tmi4topic.chan ] ])) || ($timer(tmi4topic. [ $+ [ %tmi4topic.chan ] ]))) { return }
   var %id = $1
+  var %c = %tmi4topic.logolink. [ $+ [ %id ] ]
+  if (($timer(tmi4topic.# [ $+ [ %c ] ])) || ($timer(tmi4topic. [ $+ [ %c ] ]))) { return }
   var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
 
   if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
     var %tmi4jsonS = $calc( $pos(%tmi4json,"status":,1) + 10)
     var %tmi4jsonE = $calc( $pos( $mid(%tmi4json,$pos(%tmi4json,"status":,1)) ," $+ $chr(44) $+ ",1) - 11 )
 
-    set %tmi4topic.status. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid(%tmi4json,%tmi4jsonS,%tmi4jsonE) )
+    set %tmi4topic.status. [ $+ [ %c ] ] $tmiReplaceU( $mid(%tmi4json,%tmi4jsonS,%tmi4jsonE) )
     if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
-      set %tmi4topic.game. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
+      set %tmi4topic.game. [ $+ [ %c ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
     }
     if (($tmiDownloadLogo) && ("logo":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) { 
-      set -u0 %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
-      tmiPicDownload %tmi4topic.chan %tmi4helix.logo. [ $+ [ %tmi4topic.chan ] ]
+      set -u0 %tmi4helix.logo. [ $+ [ %c ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
+      tmiPicDownload %c %tmi4helix.logo. [ $+ [ %c ] ]
     }
     ; Gathering extra data for populating channel modes
-    set %tmi4topic.followers. [ $+ [ %tmi4topic.chan ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
-    set %tmi4topic.modes. [ $+ [ %tmi4topic.chan ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
+    set %tmi4topic.followers. [ $+ [ %c ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
+    set %tmi4topic.modes. [ $+ [ %c ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
   }
 
-  tmi4settopic %tmi4topic.chan
-  unset %tmi4topic.*
+  ;;; Title and game as topic
+  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
+    var %newtopic = $chr(3) $+ $iif($len($color(info)) == 1,0,) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $iif($len($color(other)) == 1,0,) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
+    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
+  }
 
+  ;Additional info as channel modes
+  var %cmode = $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
+  var %cfollows = %tmi4topic.followers. [ $+ [ %c ] ]
+  if (($tmiTrackFollowers) && (%cfollows != $chan(%c).limit) && (%cfollows > 0)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
+  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
+  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
+
+  .unset %tmi4topic.*. [ $+ [ %tmi4topic.chan ] ]
+  .unset %tmi4topic.logolink. [ $+ [ %id ] ]
 }
+
 alias -l tmiPicDownload { 
   var -l %chan = $1
   var -l %url = $2
@@ -396,12 +410,12 @@ alias -l tmi4usersdecode {
     var %tmi4users.data = $gettok($bvar(&tmi4chatters.data,1,$bvar(&tmi4chatters.data,0)).text,%i,93)
 
     if ("broadcaster": isin %tmi4users.data) { 
-      set %tmi4users.next q
+      var %tmi4users.next = q
     }
-    if ("vips": isin %tmi4users.data) { set %tmi4users.next v }
-    if ("moderators": isin %tmi4users.data) { set %tmi4users.next o }
-    if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { set %tmi4users.next a }
-    if ("viewers": isin %tmi4users.data) { set %tmi4users.next r }
+    if ("vips": isin %tmi4users.data) { var %tmi4users.next = v }
+    if ("moderators": isin %tmi4users.data) { var %tmi4users.next = o }
+    if (("staff": isin %tmi4users.data) || ("admins": isin %tmi4users.data) || ("global_mods": isin %tmi4users.data)) { var %tmi4users.next = a }
+    if ("viewers": isin %tmi4users.data) { var %tmi4users.next = r }
     if ($chr(93) isin %tmi4users.data) { unset %tmi4users.next }
 
     if (%tmi4users.next) { set %tmi4users. [ $+ [ %c ] $+ - $+ [ %tmi4users.next ] ] $replace( $gettok(%tmi4users.data,2,91) ,$chr(34),) }
@@ -450,29 +464,6 @@ alias -l tmi4usersdecode {
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   if (($server == tmi.twitch.tv) && (%c ischan)) { .timer [ $+ tmiusers. $+ [ %c ] ] 1 90 return }
   unset %tmi4users. [ $+ [ %c ] $+ ] -*
-}
-
-;;; Title and game as topic
-alias -l tmi4settopic {
-  if ($1 ischan) { 
-    var %c = $1
-    goto settopic 
-  } 
-  elseif ($active ischan) { 
-    var %c = $active
-    goto settopic
-  }
-  return
-  :settopic
-  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
-    var %newtopic = $chr(3) $+ $iif($len($color(info)) == 1,0,) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $iif($len($color(other)) == 1,0,) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
-    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
-  }
-  ;Additional info as channel modes
-  var %cmode $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
-  if (($tmiTrackFollowers) && (%tmi4topic.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
-  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
-  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
 }
 
 ;;; Stream status (live/rerun/offline) as channel key (+k)
