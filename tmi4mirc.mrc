@@ -300,7 +300,7 @@ alias tmiRefresh {
   set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
   var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set .u14%tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] %tmi4topic.chan
+  set -u10 %tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] %tmi4topic.chan
 
 }
 alias -l tmi4helixdecode {
