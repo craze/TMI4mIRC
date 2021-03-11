@@ -337,7 +337,7 @@ alias -l tmi4helixdecode {
   var %cfollows = %tmi4topic.followers. [ $+ [ %c ] ]
   if (($tmiTrackFollowers) && (%cfollows != $chan(%c).limit) && (%cfollows > 0)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
   if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
-  .timer [ $+ tmitopic. $+ [ %c ] ] 1 120 return
+  .timer [ $+ tmi4topic. $+ [ %c ] ] 1 120 return
 
   .unset %tmi4topic.*. [ $+ [ %tmi4topic.chan ] ]
   .unset %tmi4topic.logolink. [ $+ [ %id ] ]
