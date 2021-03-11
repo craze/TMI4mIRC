@@ -63,7 +63,6 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me,.badges) $1 $msgtags(badges).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
   if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(badges).key) && (/ isin $msgtags(badges).key) && ($tmiStyling)) {
-    set -e %tmi4badges- [ $+ [ $target ] ] $msgtags(badges).key
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   .timer 1 1 tmiSyncBadges $target $me $msgtags(badges).key
@@ -296,11 +295,9 @@ alias tmiRefresh {
 
   ;Topic / Logo
   if (($timer(tmi4topic.# [ $+ [ $1 ] ])) || ($timer(tmi4topic. [ $+ [ $1 ] ]))) { return }
-  set %tmi4topic.chan $1
-  set %tmi4topic.chanid $hget(tmi. $+ $1 ,_id)
-  var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ %tmi4topic.chanid
+  var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ $hget(tmi. $+ $1 ,_id)
   bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set -u10 %tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] %tmi4topic.chan
+  set -u10 %tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] $1
 
 }
 alias -l tmi4helixdecode {
@@ -400,7 +397,7 @@ alias -l tmi4users {
   if (($server == tmi.twitch.tv) && ($+($chr(35),%c) ischan)) { .timer [ $+ tmi4users.# $+ [ %c ] ] 1 90 return }
   var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ %c $+ /chatters
   bset -t &tmi4chathead 1 Accept: application/json $crlf Connection: close
-  set -u20 %tmi4chattersid- $+ [ $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead) ] %c
+  set -u10 %tmi4chattersid- $+ [ $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead) ] %c
 }
 alias -l tmi4usersdecode {
   var %id = $1
