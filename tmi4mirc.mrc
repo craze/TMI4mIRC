@@ -397,7 +397,7 @@ menu status {
 alias -l tmi4users {
   var %c = $replace($$1,$chr(35),)
   if (($timer(tmi4users.# [ $+ [ $1 ] ])) || ($timer(tmi4users. [ $+ [ $1 ] ]))) { return }
-  if (($server == tmi.twitch.tv) && ($+($chr(35),%c) ischan)) { .timer [ $+ tmi4users. $+ [ %c ] ] 1 90 return }
+  if (($server == tmi.twitch.tv) && ($+($chr(35),%c) ischan)) { .timer [ $+ tmi4users.# $+ [ %c ] ] 1 90 return }
   var %tmi4chatters = https://tmi.twitch.tv/group/user/ $+ %c $+ /chatters
   bset -t &tmi4chathead 1 Accept: application/json $crlf Connection: close
   set -u20 %tmi4chattersid- $+ [ $urlget(%tmi4chatters,gb,&tmi4chatters.data,tmi4usersdecode,&tmi4chathead) ] %c
