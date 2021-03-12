@@ -62,7 +62,7 @@ raw USERSTATE:*:{
   hadd -m $+(tmi.,$me) color $msgtags(color).key
   hadd -m $+(tmi.,$me,.badges) $1 $msgtags(badges).key
   hadd -m $+(tmi.,$me) display-name $msgtags(display-name).key
-  if ((%tmi4badges- [ $+ [ $target ] ] != $msgtags(badges).key) && (/ isin $msgtags(badges).key) && ($tmiStyling)) {
+  if (($hget($+(tmi.,$me,.badges),$target) != $msgtags(badges).key) && (/ isin $msgtags(badges).key) && ($tmiStyling)) {
     echo $color(info) -t $target * Channel badges: $tmiparsebadges($msgtags(badges).key)
   }
   .timer 1 1 tmiSyncBadges $target $me $msgtags(badges).key
