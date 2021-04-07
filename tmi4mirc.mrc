@@ -3,7 +3,7 @@
 * Twitch Messaging Interface enhancements
 *
 * @author  Geir André Halle
-* @version 1.2.1
+* @version 1.2.2
 * @url     https://github.com/craze/TMI4mIRC
 */
 
