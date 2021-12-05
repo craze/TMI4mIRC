@@ -17,7 +17,7 @@ alias -l tmiTipDelay { return 30 }                             // Seconds to sho
 alias whisper {
   if (tmi.twitch.tv == $server) {
     raw -q privmsg $+($chr(35),$me) :.w $1-
-    echo $color(notice) -t $active -> $+(-,$chr(3),$cnick($1).color,$1,$chr(3),-) $2-
+    echo $color(notice) -t $active -> $+(-,$chr(3),$iif(1 == $len($cnick($1).color),0,),$cnick($1).color,$1,$chr(3),-) $2-
   }
 }
 #tmiwhisper end
