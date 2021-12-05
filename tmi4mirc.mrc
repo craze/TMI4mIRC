@@ -11,6 +11,7 @@
 alias -l tmiTrackFollowers { return $true }                    // Maintaining MODE +l can be $true or $false
 alias -l tmiDownloadLogo { return $true }                      // Show channel logo in corner
 alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may be replaced with your own
+alias -l tmiTipDelay { return 30 }                             // Seconds to show balloon tip if enabled (3-60)
 
 #tmiwhisper on
 alias whisper {
@@ -114,7 +115,7 @@ on ^*:ACTION:*:#:{
     tmiSyncBadges $chan $nick $msgtags(badges).key 
     if ($tmiStyling) {
       var %tmiChatter = * $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $1- 
-
+      if ($tips) { noop $tip(twitch $+ $chan,Twitch: $right(#chan,-1),%tmiChatter,$tmiTipDelay,$null,$null,$null,$wid) }
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight),$color(action)) -tm $chan %tmiChatter
       haltdef
     }    
@@ -136,11 +137,12 @@ on ^*:TEXT:*:#:{
     tmiSyncBadges $chan $iif($msgtags(display-name).key,$msgtags(display-name).key,$nick) $msgtags(badges).key 
     if (($nick == twitchnotify) || ($nick == jtv)) {
       echo $color(info) -t $chan * $1-
+      if ($tips) { noop $tip(twitch $+ $chan,Twitch: $right(#chan,-1),$1-,$tmiTipDelay,$null,$null,$null,$wid) }
       haltdef
     }
     elseif ($tmiStyling) {
       var %tmiChatter = $tmiParseBadges($msgtags(badges).key) $tmiDisplayname($iif($msgtags(display-name).key,$msgtags(display-name).key,$nick)) $+ : $iif($msgtags(msg-id).key == highlighted-message,$chr(22) $1- $chr(22),$1-) 
-
+      if ($tips) { noop $tip(twitch $+ $chan,Twitch: $right($chan,-1),%tmiChatter,$tmiTipDelay,$null,$null,$null,$wid) }
       echo $iif($highlight && ($regex($1-,/\b( $+ $me $+ $chr(124) $+ $anick $+ )\b/i)),$color(highlight)) -tm $chan %tmiChatter
       haltdef
     }
@@ -388,7 +390,6 @@ menu status {
   $iif(($server == tmi.twitch.tv) && (https?//*.twitch.tv/* iswm $url),Twitch)
   .Join $gettok($gettok($url,3,47),1,63) $+ 's chatroom:.join # $+ $gettok($gettok($url,3,47),1,63)
 }
-
 
 ;;; Fake modes for privileged users
 alias -l tmi4users {
