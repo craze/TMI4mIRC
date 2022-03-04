@@ -3,14 +3,11 @@
 * Twitch Messaging Interface enhancements
 *
 * @author  Geir André Halle
-* @version 1.2.2
+* @version 1.3
 * @url     https://github.com/craze/TMI4mIRC
 */
 
 ; Some configuration options
-alias -l tmiTrackFollowers { return $true }                    // Maintaining MODE +l can be $true or $false
-alias -l tmiDownloadLogo { return $true }                      // Show channel logo in corner
-alias -l tmiClientID { return qqzzeljmzs2x3q49k5lokkjcuckij7 } // API Client ID may be replaced with your own
 alias -l tmiTipDelay { return 30 }                             // Seconds to show balloon tip if enabled (3-60)
 
 #tmiwhisper on
@@ -294,52 +291,6 @@ alias tmiRefresh {
 
   ;User list
   tmi4users $$1
-
-  ;Topic / Logo
-  if (($timer(tmi4topic.# [ $+ [ $1 ] ])) || ($timer(tmi4topic. [ $+ [ $1 ] ]))) { return }
-  var %tmi4helix = https://api.twitch.tv/kraken/channels/ $+ $hget(tmi. $+ $1 ,_id)
-  bset -t &tmi4urlhead 1 Client-ID: $tmiClientID $crlf Accept: application/vnd.twitchtv.v5+json $crlf Connection: close
-  set -u10 %tmi4topic.logolink. [ $+ [ $urlget(%tmi4helix,gb,&tmi4topic.data,tmi4helixdecode,&tmi4urlhead) ] ] $1
-
-}
-alias -l tmi4helixdecode {
-  var %id = $1
-  var %c = %tmi4topic.logolink. [ $+ [ %id ] ]
-  if (($timer(tmi4topic.# [ $+ [ %c ] ])) || ($timer(tmi4topic. [ $+ [ %c ] ]))) { return }
-  .timer [ $+ tmi4topic. $+ [ %c ] ] 1 120 noop
-  var %tmi4json = $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text
-
-  if ("status":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) {
-    var %tmi4jsonS = $calc( $pos(%tmi4json,"status":,1) + 10)
-    var %tmi4jsonE = $calc( $pos( $mid(%tmi4json,$pos(%tmi4json,"status":,1)) ," $+ $chr(44) $+ ",1) - 11 )
-
-    set %tmi4topic.status. [ $+ [ %c ] ] $tmiReplaceU( $mid(%tmi4json,%tmi4jsonS,%tmi4jsonE) )
-    if ("game":null !isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text) { 
-      set %tmi4topic.game. [ $+ [ %c ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"game",1,44) ,9,-1) ) 
-    }
-    if (($tmiDownloadLogo) && ("logo":" isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text)) { 
-      set -u0 %tmi4helix.logo. [ $+ [ %c ] ] $tmiReplaceU( $mid( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"logo",1,44) ,9,-1) ) 
-      tmiPicDownload %c %tmi4helix.logo. [ $+ [ %c ] ]
-    }
-    ; Gathering extra data for populating channel modes
-    set %tmi4topic.followers. [ $+ [ %c ] ] $tmiReplaceU( $gettok( $matchtok($bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,"followers",1,44) ,2,58) ) 
-    set %tmi4topic.modes. [ $+ [ %c ] ] $iif("mature":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,m,) $+ $iif("partner":true isin $bvar(&tmi4topic.data,1,$bvar(&tmi4topic.data,0)).text,p,)
-  }
-
-  ;;; Title and game as topic
-  if (%tmi4topic.status. [ $+ [ %c ] ] ) {
-    var %newtopic = $chr(3) $+ $iif($len($color(info)) == 1,0,) $+ $color(info) $+ %tmi4topic.status. [ $+ [ %c ] ] $+ $chr(3) $iif(%tmi4topic.game. [ $+ [ %c ] ],$chr(40) $+ $chr(3) $+ $iif($len($color(other)) == 1,0,) $+ $color(other) $+ %tmi4topic.game. [ $+ [ %c ] ] $+ $chr(3) $+ $chr(41),)
-    if ($chan(%c).topic != %newtopic) { .parseline -qit : $+ $server TOPIC %c : $+ %newtopic }
-  }
-
-  ;Additional info as channel modes
-  var %cmode = $iif(%tmi4topic.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4topic.modes. [ $+ [ %c ] ])
-  var %cfollows = %tmi4topic.followers. [ $+ [ %c ] ]
-  if (($tmiTrackFollowers) && (%cfollows != $chan(%c).limit) && (%cfollows > 0)) { var %cmode = %cmode $+ l %tmi4topic.followers. [ $+ [ %c ] ] }
-  if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
-
-  .unset %tmi4topic.*. [ $+ [ %c ] ]
-  .unset %tmi4topic.logolink. [ $+ [ %id ] ]
 }
 
 alias -l tmiPicDownload { 
@@ -462,59 +413,4 @@ alias -l tmi4usersdecode {
 
   if ((%q != $null) || (%a != $null) || (%o != $null) || (%v != $null)) { .parseline -qit : $+ $server MODE %c + $+ $str(q,$numtok(%q,32)) $+ $str(a,$numtok(%a,32)) $+ $str(o,$numtok(%o,32)) $+ $str(v,$numtok(%v,32)) %q %a %o %v }
   unset %tmi4users. [ $+ [ %c ] $+ ] -*
-}
-
-;;; Stream status (live/rerun/offline) as channel key (+k)
-alias -l tmi4livestatus {
-  if ($1 ischan) { 
-    var %c = $1
-    goto setstatus
-  } 
-  elseif ($active ischan) { 
-    var %c = $active
-    goto setstatus
-  }
-  return
-
-  :setstatus
-  if (%tmi4livestatus. [ $+ [ %c ] ] ) {
-    var %newstatus = %tmi4livestatus. [ $+ [ %c ] ] 
-    if (($len($chan(%c).key) == 0) && ($chan(%c).key != %newstatus)) { .parseline -qit : $+ $server MODE %c :+k %newstatus }
-    elseif ($chan(%c).key != %newstatus) { .parseline -qit : $+ $server MODE %c :-k+k $chan(%c).key %newstatus }
-  }
-  ;Additional info as channel modes
-  ;var %cmode $iif(%tmi4livestatus.modes. [ $+ [ %c ] ] isin $chan(%c).mode,,%tmi4livestatus.modes. [ $+ [ %c ] ])
-  ;if (($tmiTrackFollowers) && (%tmi4livestatus.followers. [ $+ [ %c ] ] != $chan(%c).limit)) { var %cmode = %cmode $+ l %tmi4livestatus.followers. [ $+ [ %c ] ] }
-  ;if ($count(%cmode,l,m,p)) { .parseline -qit : $+ $server MODE %c + $+ %cmode }
-  .timer [ $+ tmistatus. $+ [ %c ] ] 1 120 return
-}
-on *:sockopen:tmi4livestatus:{
-  if ($sockerr > 0) return
-
-  ;if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /kraken/streams/ $+ $right(%tmi4livestatus.chan,-1) $+ ?client_id= $+ $tmiClientID }
-  ;else { var %tmi4livestatus.uri = /kraken/streams/ $+ %tmi4livestatus.chan $+ ?client_id= $+ $tmiClientID }
-  if ($left(%tmi4livestatus.chan,1) == $chr(35)) { var %tmi4livestatus.uri = /helix/streams?user_login= $+ $right(%tmi4livestatus.chan,-1) }
-  else { var %tmi4livestatus.uri = /helix/streams?user_login= $+ %tmi4livestatus.chan }
-
-  sockwrite -tn tmi4livestatus GET %tmi4livestatus.uri HTTP/1.1
-  sockwrite -tn tmi4livestatus Client-ID: $tmiClientID
-  sockwrite -tn tmi4livestatus Host: api.twitch.tv
-  sockwrite -tn tmi4livestatus Connection: close
-  sockwrite -tn tmi4livestatus $crlf
-}
-on *:sockread:tmi4livestatus:{
-  if ($sockerr > 0) return
-  sockread &tmi4livestatus.data
-
-  if ("type": isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) {
-    set -e %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] $upper( $mid( $matchtok($bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text,"type":,1,44) ,9,-1) )
-    return
-  }
-  elseif ("data":[] isin $bvar(&tmi4livestatus.data,1,$bvar(&tmi4livestatus.data,0)).text) { set %tmi4livestatus. [ $+ [ %tmi4livestatus.chan ] ] OFFLINE }
-
-  if ($sockbr == 0) return
-}
-on *:sockclose:tmi4livestatus:{ 
-  tmi4livestatus %tmi4livestatus.chan
-  ;unset %tmi4livestatus.*
 }
